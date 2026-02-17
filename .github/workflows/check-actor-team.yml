@@ -11,10 +11,11 @@ jobs:
   env:
     INPUT: ${{ toJSON(inputs) }}
     EVENT_INPUT: ${{ toJSON(github.event.inputs) }}
+    EVENT: ${{ toJSON(github.event) }}
   steps:
   - name: Debug
     run: |
      echo "actor=${{github.actor}}"
      echo "event.inputs: $EVENT_INPUT"
      echo "inputs: $INPUT"
-     echo "${{ toJSON(github.event.inputs) }}"
+     echo "event: $EVENT"
