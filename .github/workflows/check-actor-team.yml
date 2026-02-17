@@ -9,11 +9,12 @@ jobs:
  reusableworkflow:
   runs-on: ubuntu-latest
   env:
-    INPUT: "${{ toJSON(inputs) }}"
-    EVENT_INPUT: "${{ toJSON(github.event.inputs) }}"
+    INPUT: ${{ toJSON(inputs) }}
+    EVENT_INPUT: ${{ toJSON(github.event.inputs) }}
   steps:
   - name: Debug
     run: |
      echo "actor=${{github.actor}}"
      echo "event.inputs: $EVENT_INPUT"
      echo "inputs: $INPUT"
+     echo "$EVENT_INPUT"
