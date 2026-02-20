@@ -233,7 +233,7 @@ jobs:
       - name: Get-Current-Time
         id: get-current-time
         run: |
-         echo "PR_OPEN_DATE=$(TZ="US/Eastern" date  +"EST-%Y-%m-%d-%H-%M-%S")" >> "$GITHUB_OUTPUT"
+         echo "PR_OPEN_DATE=$(TZ="US/Eastern" date  +"EST-day-%Y-%m-%d-time-%H-%M-%S")" >> "$GITHUB_OUTPUT"
       - name: Create-PR-For-Merging-To-Artifacts-Branch
         id: create-pr-for-merging-to-artifacts-branch
         uses: peter-evans/create-pull-request@v8
