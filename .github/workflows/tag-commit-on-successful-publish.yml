@@ -9,25 +9,10 @@ on:
       PR_NUMBER:
         required: true
         type: string
-      PR_MILESTONE_NUMBER:
-        required: true
-        type: string
       PR_MILESTONE_TITLE:
         required: true
         type: string
       PR_MERGE_COMMIT_SHA:
-        required: true
-        type: string
-      PR_HEAD_SHA:
-        required: true
-        type: string
-      PR_STATE:
-        required: true
-        type: string
-      PR_BASE_REF:
-        required: true
-        type: string
-      PR_HEAD_REF:
         required: true
         type: string
 jobs:
