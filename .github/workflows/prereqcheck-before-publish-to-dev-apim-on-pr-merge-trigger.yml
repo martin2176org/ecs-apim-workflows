@@ -1,0 +1,70 @@
+#Reusable workflow to do prereq checks before publishing artifacts to dev apim
+#this is called only when pr merge trigger publishes artifacts into dev apim
+name: Prerequisite-Check-Before-Publish-Artifacts-to-Dev-APIM
+run-name: Prerequisite-Check-Before-Publish-Artifacts-to-Dev-APIM
+#Author martin francis kallukalam
+on:
+  workflow_call:
+    inputs:
+      PR_NUMBER:
+        required: true
+        type: string
+      PR_MILESTONE_NUMBER:
+        required: true
+        type: string
+      PR_MILESTONE_TITLE:
+        required: true
+        type: string
+      PR_MERGE_COMMIT_SHA:
+        required: true
+        type: string
+      PR_HEAD_SHA:
+        required: true
+        type: string
+      PR_STATE:
+        required: true
+        type: string
+      PR_BASE_REF:
+        required: true
+        type: string
+      PR_HEAD_REF:
+        required: true
+        type: string
+jobs:
+   Prerequisite-Check:
+    name: Prerequisite-Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print-Error-Nomilestone
+        if: ${{ inputs.PR_MILESTONE_NUMBER == null }}
+        id: print-error-nomilestone
+        continue-on-error: false
+        run: |
+         echo "PR not associated with a milestone.Exiting"
+         echo "PR not associated with a milestone.Exiting. :thumbsdown:" > $GITHUB_STEP_SUMMARY
+         exit 1
+      - name: Print-Error-NoMergeCommit
+        if: ${{ inputs.PR_MERGE_COMMIT_SHA == null }}
+        id: print-error-nomergecommit
+        continue-on-error: false
+        run: |
+         echo "No Merge Commmit available with the PR merge close event.Exiting"
+         echo "No Merge Commmit available with the PR merge close event. :thumbsdown:" > $GITHUB_STEP_SUMMARY
+         exit 1
+      - name: Set-ShortCommit-ID
+        id: set-shortcommit-id
+        run: |
+         echo "Short PR merge commit SHA is $(echo ${{ inputs.PR_MERGE_COMMIT_SHA }} | cut -c1-7)"
+         echo "SHORT_COMMITID=$(echo ${{ inputs.PR_MERGE_COMMIT_SHA }} | cut -c1-7)" >> "$GITHUB_OUTPUT"
+      - name: Print-Relevant-Info
+        id: print-relevant-info
+        run: |
+         echo "PR number for this closed & merged PR is ${{ inputs.PR_NUMBER }}"
+         echo "PR state is ${{ inputs.PR_STATE }}"
+         echo "PR milestone title is ${{ inputs.PR_MILESTONE_TITLE }}"
+         echo "PR milestone number is ${{ inputs.PR_MILESTONE_NUMBER }}"
+         echo "PR base REF is ${{ inputs.PR_BASE_REF }}"
+         echo "PR head REF is ${{ inputs.PR_HEAD_REF }}"
+         echo "PR head SHA is ${{ inputs.PR_HEAD_SHA }}"
+         echo "PR merge commit SHA is ${{ inputs.PR_MERGE_COMMIT_SHA }}"
+         echo "Short PR merge commit SHA is ${{ steps.set-shortcommit-id.outputs.SHORT_COMMITID }}"
