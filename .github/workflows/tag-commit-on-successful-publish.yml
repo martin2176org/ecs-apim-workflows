@@ -16,8 +16,8 @@ on:
         required: true
         type: string
 jobs:
-   Prerequisite-Check:
-    name: Prerequisite-Check
+   Tag-the-Commit-On-Successful-Publish-to-Dev:
+    name: Tag-the-Commit-On-Successful-Publish-to-Dev
     runs-on: ubuntu-latest
     steps:
       - name: Set-ShortCommit-ID
