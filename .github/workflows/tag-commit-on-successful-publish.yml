@@ -1,0 +1,60 @@
+#Reusable workflow to tag commit with specific tag associated with milestone and PR
+#this is called only when pr merge trigger publishes artifacts into dev apim and that publish is successful
+name: Tag-Commit-On-Successful-Publish-Artifacts-to-Dev-APIM
+run-name: Tag-Commit-On-Successful-Publish-Artifacts-to-Dev-APIM
+#Author martin francis kallukalam
+on:
+  workflow_call:
+    inputs:
+      PR_NUMBER:
+        required: true
+        type: string
+      PR_MILESTONE_NUMBER:
+        required: true
+        type: string
+      PR_MILESTONE_TITLE:
+        required: true
+        type: string
+      PR_MERGE_COMMIT_SHA:
+        required: true
+        type: string
+      PR_HEAD_SHA:
+        required: true
+        type: string
+      PR_STATE:
+        required: true
+        type: string
+      PR_BASE_REF:
+        required: true
+        type: string
+      PR_HEAD_REF:
+        required: true
+        type: string
+jobs:
+   Prerequisite-Check:
+    name: Prerequisite-Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set-ShortCommit-ID
+        id: set-shortcommit-id
+        run: |
+         echo "Short PR merge commit SHA is $(echo ${{ inputs.PR_MERGE_COMMIT_SHA }} | cut -c1-7)"
+         echo "SHORT_COMMITID=$(echo ${{ inputs.PR_MERGE_COMMIT_SHA }} | cut -c1-7)" >> "$GITHUB_OUTPUT"
+      - name: Checkout-Base-Branch
+        id: checkout-base-branch
+        uses: actions/checkout@v6
+        with:
+         ref: '${{ inputs.PR_MERGE_COMMIT_SHA }}'
+         fetch-tags: 'true'
+         fetch-depth: 50
+      - name: Get-Current-Time
+        id: get-current-time
+        run: |
+         echo "TAG_COMMIT_DATE=$(TZ="US/Eastern" date  +"EST-day-%Y-%m-%d-time-%H-%M-%S")" >> "$GITHUB_OUTPUT"
+      - name: Tag-Merge-Commit
+        id: tag-merge-commit
+        run: |
+         cd $GITHUB_WORKSPACE
+         echo "Commit tag is ms-${{ inputs.PR_MILESTONE_TITLE }}-pr-${{ inputs.PR_NUMBER }}-cid-${{ steps.set-shortcommit-id.outputs.SHORT_COMMITID }}-${{ steps.get-current-time.outputs.TAG_COMMIT_DATE }}"
+         git tag -f "ms-${{ inputs.PR_MILESTONE_TITLE }}-pr-${{ inputs.PR_NUMBER }}-cid-${{ steps.set-shortcommit-id.outputs.SHORT_COMMITID }}-${{ steps.get-current-time.outputs.TAG_COMMIT_DATE }}" ${{ inputs.PR_MERGE_COMMIT_SHA }}
+         git push origin "ms-${{ inputs.PR_MILESTONE_TITLE }}-pr-${{ inputs.PR_NUMBER }}-cid-${{ steps.set-shortcommit-id.outputs.SHORT_COMMITID }}-${{ steps.get-current-time.outputs.TAG_COMMIT_DATE }}"
