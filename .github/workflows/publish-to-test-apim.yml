@@ -208,11 +208,11 @@ jobs:
           Write-Information "Execution complete."
       - name: Add success summary
         if: steps.run-publisher.outcome == 'success'
-        run: echo "* ✅ ${{ inputs.COMMIT_TAG }} Succeeded *" >> $GITHUB_STEP_SUMMARY
+        run: echo "✅ ${{ inputs.COMMIT_TAG }} Succeeded" >> $GITHUB_STEP_SUMMARY
         shell: bash
       - name: Add failure summary
         if: steps.run-publisher.outcome == 'failure'
-        run: echo "* ❌ ${{ inputs.COMMIT_TAG }} Failed *" >> $GITHUB_STEP_SUMMARY
+        run: echo "❌ ${{ inputs.COMMIT_TAG }} Failed" >> $GITHUB_STEP_SUMMARY
         shell: bash          
           
                    
