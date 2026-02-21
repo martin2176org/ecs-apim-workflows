@@ -89,7 +89,7 @@ jobs:
       - name: Add success summary
         if: ${{ always() }}
         run: |
-         echo "# Milestone 🚀: ${{ inputs.MILESTONE_TITLE }}" >> $GITHUB_STEP_SUMMARY
+         echo "##### Milestone 🚀: ${{ inputs.MILESTONE_TITLE }}" >> $GITHUB_STEP_SUMMARY
         shell: bash
          
     Publish-Artifacts-to-Test-APIM-For-COMMIT-TAG:
