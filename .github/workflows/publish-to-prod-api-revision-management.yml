@@ -47,8 +47,18 @@ jobs:
           AZURE_BEARER_TOKEN=$(echo "$AZURE_BEARER_TOKEN_JSON" | jq -r '.accessToken')
           echo "AZURE_BEARER_TOKEN="$AZURE_BEARER_TOKEN"" >> $GITHUB_ENV
           echo "$AZURE_BEARER_TOKEN"
-      - name: create-backup-revision-and-delete-older-revisions
+      - name: Check-If-API-Exist
+        id: check-if-api-exist
+        uses: azure/cli@v2
+        with:
+         inlineScript: |
+          API_COUNT=$(az apim api list -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --query "[?name=='${{ inputs.API_NAME_FOR_REVISIONING }}']" | jq '. | length')
+          echo "API_COUNT=$API_COUNT" >> $GITHUB_OUTPUT
+          echo "API_COUNT=$API_COUNT"
+      - name: Create-Backup-Revision-And-Delete-Older-Revisions
         id: create-backup-revision-and-delete-older-revisions
+        if: steps.check-if-api-exist.outputs.API_COUNT == '1'
+        #Run this step only if API exists
         uses: azure/cli@v2
         with:
          inlineScript: |
