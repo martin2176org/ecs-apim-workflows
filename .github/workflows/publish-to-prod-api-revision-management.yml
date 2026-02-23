@@ -71,8 +71,15 @@ jobs:
           NUMBER_OF_REVISIONS_TO_DELETE=$(az apim api revision list -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --query  "sort_by([?isCurrent == \`false\` && apiRevision != '1'],&createdDateTime)[:-1].apiRevision" | jq '. | length')
           if [ "$NUMBER_OF_REVISIONS_TO_DELETE" -eq 0 ]
           then
-           echo "There are no Revisions to Delete."
+           echo "There are no Old Revisions to Delete."
           else
-          echo "Revisions to Delete are: $REVISIONS_TO_DELETE_TAB_OUTPUT"
+          echo "Old Revision(s) to Delete are: $REVISIONS_TO_DELETE_TAB_OUTPUT"
+          echo "Deleting Old Revision(s)."
+           for REVISION in $REVISIONS_TO_DELETE_TAB_OUTPUT
+           do
+            echo "Deleting Revision: $REVISION of API ${{ inputs.API_NAME_FOR_REVISIONING }}"
+            az apim api delete --yes -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id "${{ inputs.API_NAME_FOR_REVISIONING }};rev=$REVISION"
+            sleep 5
+           done
           fi
           
