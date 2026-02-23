@@ -76,7 +76,7 @@ jobs:
           then
            echo "There are no Old Revisions to Delete."
           else
-          echo "Old Revision(s) to Delete are: $REVISIONS_TO_DELETE_TAB_OUTPUT"
+          echo -e "Old Revision(s) to Delete are:\n$REVISIONS_TO_DELETE_TAB_OUTPUT"
           echo "Deleting Old Revision(s)."
            for REVISION in $REVISIONS_TO_DELETE_TAB_OUTPUT
            do
@@ -89,7 +89,7 @@ jobs:
           then
            echo "There are no Old Releases to Delete."
           else
-          echo "Old Release(s) to Delete are: $RELEASES_TO_DELETE_TAB_OUTPUT"
+          echo -e "Old Release(s) to Delete are:\n$RELEASES_TO_DELETE_TAB_OUTPUT"
           echo "Deleting Old Release(s)."
            for RELEASE in $RELEASES_TO_DELETE_TAB_OUTPUT
            do
