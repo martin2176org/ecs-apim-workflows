@@ -29,7 +29,7 @@ env:
   #DEBUG_STEPS should be repository variables
 jobs:
     Create-Backup-Revision-and-Delete-Older-Revisions:
-     if: ${{ inputs.API_NAME_FOR_REVISIONING == '' }} 
+     if: ${{ inputs.API_NAME_FOR_REVISIONING != '' }} 
      name: Create-Backup-Revision-and-Delete-Older-Revisions-Of-API-${{ inputs.API_NAME_FOR_REVISIONING }}
      runs-on: ubuntu-latest
      steps:
