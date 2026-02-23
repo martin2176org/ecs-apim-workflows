@@ -67,6 +67,11 @@ jobs:
           echo "Current list of API Releases"
           az apim api release list -o table -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }}
           echo "Calculating API Revisions to Delete"
-          REVISIONS_TO_DELETE=$(az apim api revision list -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --query  "sort_by([?isCurrent == \`false\` && apiRevision != '1'],&createdDateTime)[:-1].apiRevision" -o tsv)
-          echo "Revisions to Delete are: $REVISIONS_TO_DELETE"
+          REVISIONS_TO_DELETE_TAB_OUTPUT=$(az apim api revision list -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --query  "sort_by([?isCurrent == \`false\` && apiRevision != '1'],&createdDateTime)[:-1].apiRevision" -o tsv)
+          NUMBER_OF_REVISIONS_TO_DELETE=$(az apim api revision list -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --query  "sort_by([?isCurrent == \`false\` && apiRevision != '1'],&createdDateTime)[:-1].apiRevision" | jq '. | length')
+          if [ "$NUMBER_OF_REVISIONS_TO_DELETE" -eq 0 ]; then
+           echo "There are no Revisions to Delete."
+          then
+          echo "Revisions to Delete are: $REVISIONS_TO_DELETE_TAB_OUTPUT"
+          fi
           
