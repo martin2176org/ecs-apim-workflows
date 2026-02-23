@@ -62,6 +62,11 @@ jobs:
         uses: azure/cli@v2
         with:
          inlineScript: |
-          az apim api revision list -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }}
-          az apim api release list -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }}
+          echo "Current list of API Revisions"
+          az apim api revision list -o table -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }}
+          echo "Current list of API Releases"
+          az apim api release list -o table -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }}
+          echo "Calculating API Revisions to Delete"
+          REVISIONS_TO_DELETE=$(az apim api revision list -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --query  "sort_by([?isCurrent == \`false\` && apiRevision != '1'],&createdDateTime)[:-1].apiRevision" -o tsv)
+          echo "Revisions to Delete are: $REVISIONS_TO_DELETE"
           
