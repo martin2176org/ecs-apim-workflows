@@ -62,6 +62,9 @@ jobs:
         uses: azure/cli@v2
         with:
          inlineScript: |
+          REVISION_DATE=$(TZ="US/Eastern" date  +"EST-day-%Y-%m-%d-time-%H-%M-%S")
+          echo "Creating a new Revision of API ${{ inputs.API_NAME_FOR_REVISIONING }}"
+          az apim api revision create -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --api-revision "pre-ms-${{ inputs.MILESTONE_TITLE }}-$REVISION_DATE" --api-revision-description "created prior to deploying ${{ inputs.MILESTONE_TITLE }}"
           echo "Current list of API Revisions"
           az apim api revision list -o table -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }}
           echo "Current list of API Releases"
