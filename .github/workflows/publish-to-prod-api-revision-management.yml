@@ -94,7 +94,7 @@ jobs:
            for RELEASE in $RELEASES_TO_DELETE_TAB_OUTPUT
            do
             echo "Deleting Release: $RELEASE of API ${{ inputs.API_NAME_FOR_REVISIONING }}"
-            az apim api release delete --yes -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --release-id $RELEASE 
+            az apim api release delete -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --release-id $RELEASE 
             sleep 5
            done
           fi          
