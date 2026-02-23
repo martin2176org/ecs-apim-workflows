@@ -66,9 +66,12 @@ jobs:
           az apim api revision list -o table -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }}
           echo "Current list of API Releases"
           az apim api release list -o table -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }}
-          echo "Calculating API Revisions to Delete"
+          echo "Calculating API Revisions & Releases to Delete"
           REVISIONS_TO_DELETE_TAB_OUTPUT=$(az apim api revision list -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --query  "sort_by([?isCurrent == \`false\` && apiRevision != '1'],&createdDateTime)[:-1].apiRevision" -o tsv)
           NUMBER_OF_REVISIONS_TO_DELETE=$(az apim api revision list -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --query  "sort_by([?isCurrent == \`false\` && apiRevision != '1'],&createdDateTime)[:-1].apiRevision" | jq '. | length')
+          RELEASES_TO_DELETE_TAB_OUTPUT=$(az apim api release list -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --query  "sort_by([], &createdDateTime)[:-2].name" -o tsv)
+          NUMBER_OF_RELEASES_TO_DELETE=$(az apim api release list -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --query  "sort_by([], &createdDateTime)[:-2].name" | jq '. | length')
+          
           if [ "$NUMBER_OF_REVISIONS_TO_DELETE" -eq 0 ]
           then
            echo "There are no Old Revisions to Delete."
@@ -82,4 +85,17 @@ jobs:
             sleep 5
            done
           fi
+          if [ "$NUMBER_OF_RELEASES_TO_DELETE" -eq 0 ]
+          then
+           echo "There are no Old Releases to Delete."
+          else
+          echo "Old Release(s) to Delete are: $RELEASES_TO_DELETE_TAB_OUTPUT"
+          echo "Deleting Old Release(s)."
+           for RELEASE in $RELEASES_TO_DELETE_TAB_OUTPUT
+           do
+            echo "Deleting Release: $RELEASE of API ${{ inputs.API_NAME_FOR_REVISIONING }}"
+            az apim api release delete --yes -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --release-id $RELEASE 
+            sleep 5
+           done
+          fi          
           
