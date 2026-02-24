@@ -9,7 +9,7 @@ on:
       API_MANAGEMENT_ENVIRONMENT:
         required: true
         type: string
-      MILESTONE_TITLE:
+      REVISION_ID:
         required: true
         type: string
       API_NAME_FOR_REVISIONING:
@@ -64,7 +64,7 @@ jobs:
          inlineScript: |
           REVISION_DATE=$(TZ="US/Eastern" date  +"EST-day-%Y-%m-%d-time-%H-%M-%S")
           echo "Creating a new Revision of API ${{ inputs.API_NAME_FOR_REVISIONING }}"
-          az apim api revision create -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --api-revision "pre-ms-${{ inputs.MILESTONE_TITLE }}-$REVISION_DATE" --api-revision-description "created prior to deploying ${{ inputs.MILESTONE_TITLE }}"
+          az apim api revision create -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --api-revision "pre-${{ inputs.REVISION_ID }}-$REVISION_DATE" --api-revision-description "created prior to deploying ${{ inputs.REVISION_ID }}"
           echo "Current list of API Revisions"
           az apim api revision list -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --query "[].{APIid:apiId,IsCurrent:isCurrent,APIRevision:apiRevision}" -o table
           echo "Current list of API Releases"
