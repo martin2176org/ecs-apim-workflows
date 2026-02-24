@@ -26,6 +26,9 @@ on:
       BRANCH_FOR_PUBLISHER_CONFIG:
         required: true
         type: string
+      REFERENCE_NUMBER:
+       required: true
+       type: string             
 # PUBLISH_ARTIFACTS_CHOICE has one allowed value when deploying all artifacts
 # "publish-delta-artifacts-in-specific-commit"
 env:
@@ -121,6 +124,12 @@ jobs:
         run: |
           Write-Information "Printing out all environment variables in the shell for debugging purpose"
           gci env:
+      - name: Add-Job-Summary
+        id: add-job-summary
+        if: ${{ always() }}
+        run: |
+         echo "##### Reference 🚀: ${{ inputs.REFERENCE_NUMBER }}" >> $GITHUB_STEP_SUMMARY
+        shell: bash           
       - name: Run-Publisher
         id: run-publisher
         shell: pwsh
@@ -195,5 +204,16 @@ jobs:
           & "$executableFilePath"              
           if ($LASTEXITCODE -ne 0) { throw "Running publisher failed."}
 
-          Write-Information "Execution complete."     
+          Write-Information "Execution complete."
+      - name: Add-Run-Publisher-Step-Success-Summary
+        id: add-run-publisher-step-success-summary
+        if: steps.run-publisher.outcome == 'success'
+        run: echo "✅ Deployment of ${{ inputs.COMMITID }} Succeeded" >> $GITHUB_STEP_SUMMARY
+        shell: bash
+      - name: Add-Run-Publisher-Step-Failure-Summary
+        id: add-run-publisher-step-failure-summary
+        if: steps.run-publisher.outcome == 'failure'
+        run: echo "❌ Deployment of ${{ inputs.COMMITID }} Failed" >> $GITHUB_STEP_SUMMARY
+        shell: bash              
+                             
                    
