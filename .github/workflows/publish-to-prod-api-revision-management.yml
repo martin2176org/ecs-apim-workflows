@@ -68,6 +68,11 @@ jobs:
           REVISION_DATE=$(TZ="US/Eastern" date  +"EST-day-%Y-%m-%d-time-%H-%M-%S")
           echo "Creating a new Revision of API ${{ inputs.API_NAME_FOR_REVISIONING }}"
           az apim api revision create -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --api-revision "pre-${{ inputs.REVISION_ID }}-$REVISION_DATE" --api-revision-description "created prior to deploying ${{ inputs.REVISION_ID }}"
+          echo "Making the revision offline"
+          az rest --method patch \
+           --url "https://management.azure.com/subscriptions/${{ env.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ env.AZURE_RESOURCE_GROUP_NAME }}/providers/Microsoft.ApiManagement/service/${{ env.API_MANAGEMENT_SERVICE_NAME }}/apis/${{ inputs.API_NAME_FOR_REVISIONING }};rev=pre-${{ inputs.REVISION_ID }}-$REVISION_DATE?api-version=2024-05-01" \
+           --header "Content-Type=application/json" "If-Match=*" \
+           --body '{"properties":{"isOnline":false}}'
           echo "Current list of API Revisions"
           az apim api revision list -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --query "[].{APIid:apiId,IsCurrent:isCurrent,APIRevision:apiRevision}" -o table
           echo "Current list of API Releases"
