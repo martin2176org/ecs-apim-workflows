@@ -9,10 +9,10 @@ on:
       PR_NUMBER:
         required: true
         type: string
-      PR_MILESTONE_NUMBER:
+      MILESTONE_NUMBER:
         required: true
         type: string
-      PR_MILESTONE_TITLE:
+      MILESTONE_TITLE:
         required: true
         type: string
       PR_MERGE_COMMIT_SHA:
@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Print-Error-Nomilestone
-        if: ${{ inputs.PR_MILESTONE_NUMBER == null }}
+        if: ${{ inputs.MILESTONE_NUMBER == null }}
         id: print-error-nomilestone
         continue-on-error: false
         run: |
@@ -61,8 +61,8 @@ jobs:
         run: |
          echo "PR number for this closed & merged PR is ${{ inputs.PR_NUMBER }}"
          echo "PR state is ${{ inputs.PR_STATE }}"
-         echo "PR milestone title is ${{ inputs.PR_MILESTONE_TITLE }}"
-         echo "PR milestone number is ${{ inputs.PR_MILESTONE_NUMBER }}"
+         echo "PR milestone title is ${{ inputs.MILESTONE_TITLE }}"
+         echo "PR milestone number is ${{ inputs.MILESTONE_NUMBER }}"
          echo "PR base REF is ${{ inputs.PR_BASE_REF }}"
          echo "PR head REF is ${{ inputs.PR_HEAD_REF }}"
          echo "PR head SHA is ${{ inputs.PR_HEAD_SHA }}"
