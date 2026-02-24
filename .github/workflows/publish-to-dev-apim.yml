@@ -26,7 +26,7 @@ on:
       BRANCH_FOR_PUBLISHER_CONFIG:
         required: true
         type: string
-      PR_MILESTONE_TITLE:
+      MILESTONE_TITLE:
         required: true
         type: string
 # PUBLISH_ARTIFACTS_CHOICE has four three values listed below
@@ -133,8 +133,8 @@ jobs:
         id: add-job-summary
         if: ${{ always() }}
         run: |
-         echo "##### Milestone 🚀: ${{ inputs.PR_MILESTONE_TITLE }} CommitID:${{ inputs.COMMITID }} " >> $GITHUB_STEP_SUMMARY
-        shell: bash            
+         echo "##### Milestone 🚀: ${{ inputs.MILESTONE_TITLE }}" >> $GITHUB_STEP_SUMMARY
+        shell: bash           
       - name: Run-Publisher
         id: run-publisher
         shell: pwsh
@@ -207,4 +207,13 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Running publisher failed."}
 
           Write-Information "Execution complete."     
-          
+      - name: Add-Run-Publisher-Step-Success-Summary
+        id: add-run-publisher-step-success-summary
+        if: steps.run-publisher.outcome == 'success'
+        run: echo "✅ ${{ inputs.COMMITID }} Succeeded" >> $GITHUB_STEP_SUMMARY
+        shell: bash
+      - name: Add-Run-Publisher-Step-Failure-Summary
+        id: add-run-publisher-step-failure-summary
+        if: steps.run-publisher.outcome == 'failure'
+        run: echo "❌ ${{ inputs.COMMITID }} Failed" >> $GITHUB_STEP_SUMMARY
+        shell: bash            
