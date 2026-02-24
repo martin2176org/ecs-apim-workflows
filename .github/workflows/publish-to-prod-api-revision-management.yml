@@ -60,7 +60,10 @@ jobs:
         if: steps.check-if-api-exist.outputs.API_COUNT == '1'
         #Run this step only if API exists
         uses: azure/cli@v2
+        env:
+         TZ: "US/Eastern"
         with:
+         azcliversion: latest
          inlineScript: |
           REVISION_DATE=$(TZ="US/Eastern" date  +"EST-day-%Y-%m-%d-time-%H-%M-%S")
           echo "Creating a new Revision of API ${{ inputs.API_NAME_FOR_REVISIONING }}"
