@@ -206,13 +206,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Running publisher failed."}
 
           Write-Information "Execution complete."
-      - name: Add success summary
+      - name: Add-Run-Publisher-Step-Success-Summary
+        id: add-run-publisher-step-success-summary
         if: steps.run-publisher.outcome == 'success'
         run: echo "✅ ${{ inputs.COMMIT_TAG }} Succeeded" >> $GITHUB_STEP_SUMMARY
         shell: bash
-      - name: Add failure summary
+      - name: Add-Run-Publisher-Step-Failure-Summary
+        id: add-run-publisher-step-failure-summary
         if: steps.run-publisher.outcome == 'failure'
         run: echo "❌ ${{ inputs.COMMIT_TAG }} Failed" >> $GITHUB_STEP_SUMMARY
-        shell: bash          
-          
+        shell: bash  
                    
