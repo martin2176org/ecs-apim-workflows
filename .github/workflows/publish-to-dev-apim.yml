@@ -210,10 +210,10 @@ jobs:
       - name: Add-Run-Publisher-Step-Success-Summary
         id: add-run-publisher-step-success-summary
         if: steps.run-publisher.outcome == 'success'
-        run: echo "✅ ${{ inputs.COMMITID }} Succeeded" >> $GITHUB_STEP_SUMMARY
+        run: echo "✅ Deployment of ${{ inputs.COMMITID }} Succeeded" >> $GITHUB_STEP_SUMMARY
         shell: bash
       - name: Add-Run-Publisher-Step-Failure-Summary
         id: add-run-publisher-step-failure-summary
         if: steps.run-publisher.outcome == 'failure'
-        run: echo "❌ ${{ inputs.COMMITID }} Failed" >> $GITHUB_STEP_SUMMARY
+        run: echo "❌ Deployment of ${{ inputs.COMMITID }} Failed" >> $GITHUB_STEP_SUMMARY
         shell: bash            
