@@ -26,6 +26,9 @@ on:
       BRANCH_FOR_PUBLISHER_CONFIG:
         required: true
         type: string
+      PR_MILESTONE_TITLE:
+        required: true
+        type: string
 # PUBLISH_ARTIFACTS_CHOICE has four three values listed below
 # "publish-delta-artifacts-in-latest-commit"
 # "publish-delta-artifacts-in-specific-commit"
@@ -125,7 +128,13 @@ jobs:
         shell: pwsh      
         run: |
           Write-Information "Printing out all environment variables in the shell for debugging purpose"
-          gci env:      
+          gci env:
+      - name: Add-Job-Summary
+        id: add-job-summary
+        if: ${{ always() }}
+        run: |
+         echo "##### Milestone 🚀: ${{ inputs.PR_MILESTONE_TITLE }} CommitID:${{ inputs.COMMITID }} " >> $GITHUB_STEP_SUMMARY
+        shell: bash            
       - name: Run-Publisher
         id: run-publisher
         shell: pwsh
