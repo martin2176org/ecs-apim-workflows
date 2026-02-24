@@ -51,6 +51,7 @@ jobs:
         id: check-if-api-exist
         uses: azure/cli@v2
         with:
+         azcliversion: latest
          inlineScript: |
           API_COUNT=$(az apim api list -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --query "[?name=='${{ inputs.API_NAME_FOR_REVISIONING }}']" | jq '. | length')
           echo "API_COUNT=$API_COUNT" >> $GITHUB_OUTPUT
@@ -61,7 +62,7 @@ jobs:
         #Run this step only if API exists
         uses: azure/cli@v2
         env:
-         TZ: "US/Eastern"
+         TZ: "America/New_York"
         with:
          azcliversion: latest
          inlineScript: |
