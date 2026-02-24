@@ -9,7 +9,7 @@ on:
       PR_NUMBER:
         required: true
         type: string
-      PR_MILESTONE_TITLE:
+      MILESTONE_TITLE:
         required: true
         type: string
       PR_MERGE_COMMIT_SHA:
@@ -40,6 +40,6 @@ jobs:
         id: tag-merge-commit
         run: |
          cd $GITHUB_WORKSPACE
-         echo "Commit tag is ms-${{ inputs.PR_MILESTONE_TITLE }}-pr-${{ inputs.PR_NUMBER }}-cid-${{ steps.set-shortcommit-id.outputs.SHORT_COMMITID }}-${{ steps.get-current-time.outputs.TAG_COMMIT_DATE }}"
+         echo "Commit tag is ms-${{ inputs.MILESTONE_TITLE }}-pr-${{ inputs.PR_NUMBER }}-cid-${{ steps.set-shortcommit-id.outputs.SHORT_COMMITID }}-${{ steps.get-current-time.outputs.TAG_COMMIT_DATE }}"
          git tag -f "ms-${{ inputs.PR_MILESTONE_TITLE }}-pr-${{ inputs.PR_NUMBER }}-cid-${{ steps.set-shortcommit-id.outputs.SHORT_COMMITID }}-${{ steps.get-current-time.outputs.TAG_COMMIT_DATE }}" ${{ inputs.PR_MERGE_COMMIT_SHA }}
          git push origin "ms-${{ inputs.PR_MILESTONE_TITLE }}-pr-${{ inputs.PR_NUMBER }}-cid-${{ steps.set-shortcommit-id.outputs.SHORT_COMMITID }}-${{ steps.get-current-time.outputs.TAG_COMMIT_DATE }}"
