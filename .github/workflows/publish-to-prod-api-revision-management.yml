@@ -62,10 +62,11 @@ jobs:
         #Run this step only if API exists
         uses: azure/cli@v2
         env:
-         TZ: "America/New_York"
+         TZ: "US/Eastern"
         with:
          azcliversion: latest
          inlineScript: |
+          tdnf install tzdata -yq
           date
           date  +"EST-day-%Y-%m-%d-time-%H-%M-%S"
           TZ="US/Eastern" date  +"EST-day-%Y-%m-%d-time-%H-%M-%S"
