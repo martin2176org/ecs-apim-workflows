@@ -65,6 +65,10 @@ jobs:
         with:
          azcliversion: latest
          inlineScript: |
+          date
+          date  +"EST-day-%Y-%m-%d-time-%H-%M-%S"
+          TZ="US/Eastern" date  +"EST-day-%Y-%m-%d-time-%H-%M-%S"
+          TZ="America/New_York" date  +"EST-day-%Y-%m-%d-time-%H-%M-%S"
           REVISION_DATE=$(TZ="US/Eastern" date  +"EST-day-%Y-%m-%d-time-%H-%M-%S")
           echo "Creating a new Revision of API ${{ inputs.API_NAME_FOR_REVISIONING }}"
           az apim api revision create -g ${{ env.AZURE_RESOURCE_GROUP_NAME }} -n ${{ env.API_MANAGEMENT_SERVICE_NAME }} --api-id ${{ inputs.API_NAME_FOR_REVISIONING }} --api-revision "pre-${{ inputs.REVISION_ID }}-$REVISION_DATE" --api-revision-description "created prior to deploying ${{ inputs.REVISION_ID }}"
