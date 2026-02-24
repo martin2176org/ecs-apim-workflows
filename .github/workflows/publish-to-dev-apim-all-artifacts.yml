@@ -211,6 +211,6 @@ jobs:
       - name: Add-Run-Publisher-Step-Failure-Summary
         id: add-run-publisher-step-failure-summary
         if: steps.run-publisher.outcome == 'failure'
-        run: echo "❌Deplpyment of  ${{ inputs.COMMITID }} Failed" >> $GITHUB_STEP_SUMMARY
+        run: echo "❌ Deployment of ${{ inputs.COMMITID }} Failed" >> $GITHUB_STEP_SUMMARY
         shell: bash               
                    
