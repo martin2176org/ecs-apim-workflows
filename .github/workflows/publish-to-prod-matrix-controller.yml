@@ -96,6 +96,12 @@ jobs:
         id: print-matrix
         run: |
           echo "${{ toJson(steps.generate-matrix.outputs.matrix) }}"
+      - name: Add-Job-Summary
+        id: add-job-summary
+        if: ${{ always() }}
+        run: |
+         echo "##### Milestone 🚀: ${{ inputs.MILESTONE_TITLE }}" >> $GITHUB_STEP_SUMMARY
+        shell: bash          
     Publish-Artifacts-to-Prod-APIM-For-COMMIT-TAG:
      needs: Validate-Milestone-and-Generate-Matrix-Jobs
      strategy:
