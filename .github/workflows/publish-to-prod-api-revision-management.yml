@@ -15,6 +15,7 @@ on:
       API_NAME_FOR_REVISIONING:
         required: true
         type: string
+        default: ''
 concurrency:
  group: create-backup-revision-and-delete-older-revisions-of-prod-api
  cancel-in-progress: false
