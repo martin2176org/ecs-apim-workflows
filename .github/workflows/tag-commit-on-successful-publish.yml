@@ -41,5 +41,5 @@ jobs:
         run: |
          cd $GITHUB_WORKSPACE
          echo "Commit tag is ms-${{ inputs.MILESTONE_TITLE }}-pr-${{ inputs.PR_NUMBER }}-cid-${{ steps.set-shortcommit-id.outputs.SHORT_COMMITID }}-${{ steps.get-current-time.outputs.TAG_COMMIT_DATE }}"
-         git tag -f "ms-${{ inputs.PR_MILESTONE_TITLE }}-pr-${{ inputs.PR_NUMBER }}-cid-${{ steps.set-shortcommit-id.outputs.SHORT_COMMITID }}-${{ steps.get-current-time.outputs.TAG_COMMIT_DATE }}" ${{ inputs.PR_MERGE_COMMIT_SHA }}
-         git push origin "ms-${{ inputs.PR_MILESTONE_TITLE }}-pr-${{ inputs.PR_NUMBER }}-cid-${{ steps.set-shortcommit-id.outputs.SHORT_COMMITID }}-${{ steps.get-current-time.outputs.TAG_COMMIT_DATE }}"
+         git tag -f "ms-${{ inputs.MILESTONE_TITLE }}-pr-${{ inputs.PR_NUMBER }}-cid-${{ steps.set-shortcommit-id.outputs.SHORT_COMMITID }}-${{ steps.get-current-time.outputs.TAG_COMMIT_DATE }}" ${{ inputs.PR_MERGE_COMMIT_SHA }}
+         git push origin "ms-${{ inputs.MILESTONE_TITLE }}-pr-${{ inputs.PR_NUMBER }}-cid-${{ steps.set-shortcommit-id.outputs.SHORT_COMMITID }}-${{ steps.get-current-time.outputs.TAG_COMMIT_DATE }}"
