@@ -133,6 +133,7 @@ jobs:
         id: add-job-summary
         if: ${{ always() }}
         run: |
+         echo "### Environment: ${{ inputs.API_MANAGEMENT_ENVIRONMENT }} 🛠️" >> $GITHUB_STEP_SUMMARY
          echo "##### Milestone 🚀: ${{ inputs.MILESTONE_TITLE }}" >> $GITHUB_STEP_SUMMARY
         shell: bash           
       - name: Run-Publisher
