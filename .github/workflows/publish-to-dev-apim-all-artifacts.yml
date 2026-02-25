@@ -126,6 +126,7 @@ jobs:
         id: add-job-summary
         if: ${{ always() }}
         run: |
+         echo "### Environment: Dev 🛠️"
          echo "##### Reference 🚀: ${{ inputs.REFERENCE_NUMBER }}" >> $GITHUB_STEP_SUMMARY
         shell: bash            
       - name: Run-Publisher
