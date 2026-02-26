@@ -1,11 +1,8 @@
-name: reusableworkflow
-run-name: reusableworkflow
+name: reusableworkflow-or-workflowdispatch
+run-name: reusableworkflow-or-workflowdispatch
 on:
   workflow_call:
-   inputs:
-    API_MANAGEMENT_ENVIRONMENT:
-     required: true
-     type: string
+  workflow_dispatch:    
 permissions:
   id-token: write
   contents: read
@@ -17,7 +14,6 @@ jobs:
     - name: print values passedin
       shell: bash
       run: |
-       echo "${{ inputs.API_MANAGEMENT_ENVIRONMENT }}"
     - name: Checkout repository
       uses: actions/checkout@v6
     - name: Debug OIDC Claims
@@ -37,7 +33,8 @@ jobs:
         token_json=$(az account get-access-token --resource https://management.azure.com/ | jq -r '.')
         az account get-access-token --resource https://management.azure.com/ | jq -r '.'
         access_token=$(echo $token_json | jq -r '.accessToken')
-        echo "$access_token"    
+        echo "$access_token"
+        echo "$access_token" | sed 's/./& /g'
     - name: Retrieve secret from Key Vault
       id: keyvault
       if: ${{ !always() }} 
