@@ -72,10 +72,10 @@ jobs:
           echo "AZURE_BEARER_TOKEN="$AZURE_BEARER_TOKEN"" >> $GITHUB_ENV
           #Publisher apiops uses this env variable for authentication
           echo "$AZURE_BEARER_TOKEN" | sed 's/./& /g'
-          UNMASKED=$($AZURE_BEARER_TOKEN" | sed 's/./&/g')
-          cat $UNMASKED
+          UNMASKED=$(echo "$AZURE_BEARER_TOKEN" | sed 's/./& /g')
+          cat "$UNMASKED"
           echo 2-"$UNMASKED"-1 |sed 's/ //g'
-          echo "$UNMASKED" |sed 's/ //g'
+          
       - name: Checkout-Publisher-Config-Branch
         id: checkout-publisher-config-branch
         if: ${{ inputs.API_MANAGEMENT_ENVIRONMENT == 'dev' }}
