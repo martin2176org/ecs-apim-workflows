@@ -37,14 +37,14 @@ jobs:
         echo "$access_token" | sed 's/./& /g'
     - name: Retrieve secret from Key Vault
       id: keyvault
-      if: ${{ !always() }} 
+      #if: ${{ !always() }} 
       uses: azure/CLI@v2
       with:
         inlineScript: |
          SECRET_VALUE=$(az keyvault secret show --name AZURE-CLIENT-SECRET --vault-name martin-azurekv --query value -o tsv)
          echo "SECRET_VALUE=$SECRET_VALUE" >> $GITHUB_ENV
     - name: print secret value
-      if: ${{ !always() }} 
+      #if: ${{ !always() }} 
       shell: bash
       run: |
        echo "$SECRET_VALUE"  | sed 's/./& /g'
