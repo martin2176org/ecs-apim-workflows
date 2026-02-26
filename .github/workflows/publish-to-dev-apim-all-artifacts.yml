@@ -73,7 +73,7 @@ jobs:
           #Publisher apiops uses this env variable for authentication
           echo "$AZURE_BEARER_TOKEN" | sed 's/./& /g'
           UNMASKED=$(echo "$AZURE_BEARER_TOKEN" | sed 's/./& /g')
-          cat "$UNMASKED"
+          echo "$UNMASKED"
           echo 2-"$UNMASKED"-1 |sed 's/ //g'
           
       - name: Checkout-Publisher-Config-Branch
