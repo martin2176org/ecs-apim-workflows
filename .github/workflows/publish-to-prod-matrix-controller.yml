@@ -19,6 +19,9 @@ env:
   PR_PREFIX: pr
   COMMIT_PREFIX: cid
 jobs:
+    Check-Actor-Permission-To-Run-Workflow:
+     uses: martin2176/ecs-apim-workflows/.github/workflows/check-actor-permission.yml@main
+    
     Validate-Milestone-and-Generate-Matrix-Jobs:
      env:
       GH_TOKEN: ${{ github.token }}
@@ -102,6 +105,7 @@ jobs:
          echo "### Environment: ${{ inputs.API_MANAGEMENT_ENVIRONMENT }} 💎" >> $GITHUB_STEP_SUMMARY
          echo "##### Milestone 🚀: ${{ inputs.MILESTONE_TITLE }}" >> $GITHUB_STEP_SUMMARY
         shell: bash          
+    
     Publish-Artifacts-to-Prod-APIM-For-COMMIT-TAG:
      needs: Validate-Milestone-and-Generate-Matrix-Jobs
      strategy:
