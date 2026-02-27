@@ -14,6 +14,6 @@ jobs:
     continue-on-error: false
     if: ${{ !contains(fromJSON('["octocat", "mona"]'), github.actor) }}
     run: |
-     echo "::error title=Permission Denied::{{ $github.actor }} is not allowed to Deploy Artifacts to Production APIM."
+     echo "::error title=Permission Denied::{{ github.actor }} is not allowed to Deploy Artifacts to Production APIM."
      exit 1
 
