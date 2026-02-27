@@ -9,11 +9,13 @@ jobs:
   runs-on: ubuntu-latest
   env:
     ALLOWED_ACTORSINPUT: '["martin2176", "item2", "item3"]'
+    
   steps:
   - name: Exit-If-Actor-Not-Allowed
     continue-on-error: false
     if: ${{ !contains(fromJSON('["octocat", "mona"]'), github.actor) }}
     run: |
-     echo "::error title=Permission Denied::{{ github.actor }} is not allowed to Deploy Artifacts to Production APIM."
+     echo "{{ github.actor }} not allowed to Deploy Artifacts to Production APIM ❌" >> $GITHUB_STEP_SUMMARY
+     echo "::error title=Permission Denied:: {{ github.actor }} is not allowed to Deploy Artifacts to Production APIM."
      exit 1
 
