@@ -8,7 +8,7 @@ jobs:
   name: Check-Actor-Permission-To-Run-Workflow
   runs-on: ubuntu-latest
   env:
-    ALLOWED_ACTORS: '["martin2176", "brian", "david"]'
+    ALLOWED_ACTORS: '["martin21761", "brian", "david"]'
   steps:
   - name: Exit-If-Actor-Not-Allowed
     continue-on-error: false
