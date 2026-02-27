@@ -37,7 +37,7 @@ env:
   Logging__LogLevel__Default: ${{ vars.LOG_LEVEL }}
   COMMIT_TAG: ${{ inputs.COMMIT_TAG }}
   DEBUG_STEPS: ${{ vars.DEBUG_STEPS }}
-  AZURE_CLIENT_ID: "cbbb6866-4d3f-414f-a8ea-317e912b8319"
+  AZURE_CLIENT_ID: "92f5cefc-a75b-4687-89c3-e9f7aaeff7c6"
   API_MANAGEMENT_SERVICE_NAME: "feiaz-apim-prod"
   AZURE_RESOURCE_GROUP_NAME: "apim"
   AZURE_SUBSCRIPTION_ID: "db73da55-ad6a-4d59-aeea-bba62c278f2a"
