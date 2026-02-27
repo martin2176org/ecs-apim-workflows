@@ -29,6 +29,9 @@ env:
   AZURE_TENANT_ID: "21c9315b-cdc8-41c8-b30d-d4da2c5a804b"
   #DEBUG_STEPS should be repository variables
 jobs:
+    Check-Actor-Permission-To-Run-Workflow:
+     uses: martin2176/ecs-apim-workflows/.github/workflows/check-actor-permission.yml@main
+
     Create-Backup-Revision-and-Delete-Older-Revisions:
      environment: ${{ inputs.API_MANAGEMENT_ENVIRONMENT }}
      if: ${{ inputs.API_NAME_FOR_REVISIONING != '' }} 
