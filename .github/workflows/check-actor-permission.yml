@@ -12,9 +12,10 @@ jobs:
   steps:
   - name: Exit-If-Actor-Not-Allowed
     continue-on-error: false
-    if: contains(fromJSON(env.ALLOWED_ACTORS), github.actor)
+    if: ${{ !contains(fromJSON(env.ALLOWED_ACTORS), github.actor) }}
+    #if: contains(fromJSON(env.ALLOWED_ACTORS), github.actor)
     run: |
-     echo "###${{ github.actor }} not allowed to Deploy Artifacts to Production APIM ❌" >> $GITHUB_STEP_SUMMARY
+     echo "### ${{ github.actor }} not allowed to Deploy Artifacts to Production APIM ❌" >> $GITHUB_STEP_SUMMARY
      echo "::error title=Permission Denied::${{ github.actor }} is not allowed to Deploy Artifacts to Production APIM."
      exit 1
 
