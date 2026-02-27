@@ -2,9 +2,7 @@ name: reusableworkflow
 run-name: reusableworkflow
 on:
   workflow_call:
-permissions:
-  id-token: write
-  contents: read
+  workflow_dispatch: 
 jobs:
  reusableworkflow:
   runs-on: ubuntu-latest
