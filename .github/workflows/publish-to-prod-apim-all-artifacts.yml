@@ -44,7 +44,6 @@ env:
   # Logging__LogLevel__Default & DEBUG_STEPS should be repository variables
 jobs:
     Publish-Artifacts-to-Prod-APIM:
-     environment: ${{ inputs.API_MANAGEMENT_ENVIRONMENT }}
      name: Publish-Artifacts-to-Prod-APIM-From-Branch-${{ inputs.COMMITID }}
      runs-on: ubuntu-latest
      steps:
