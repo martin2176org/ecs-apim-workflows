@@ -1,22 +1,19 @@
-name: reusableworkflow
-run-name: reusableworkflow
+name: Check-Actor-Permission-To-Run-Workflow
+run-name: Check-Actor-Permission-To-Run-Workflow
 on:
   workflow_call:
   workflow_dispatch: 
 jobs:
- reusableworkflow:
+ Check-Actor-Permission-To-Run-Workflow:
+  name: Check-Actor-Permission-To-Run-Workflow
   runs-on: ubuntu-latest
   env:
-    INPUT: ${{ toJSON(inputs) }}
-    EVENT_INPUT: ${{ toJSON(github.event.inputs) }}
-    EVENT: ${{ toJSON(github.event) }}
-    GITHUB: ${{ toJSON(github) }}
+    ALLOWED_ACTORSINPUT: '["martin2176", "item2", "item3"]'
   steps:
-  - name: Debug
+  - name: Exit-If-Actor-Not-Allowed
+    continue-on-error: false
+    if: ${{ !contains(fromJSON('["octocat", "mona"]'), github.actor) }}
     run: |
-     echo "actor=${{github.actor}}"
-     echo "actorid=${{github.actor_id}}"
-     echo "event.inputs: $EVENT_INPUT"
-     echo "inputs: $INPUT"
-     echo "event: $EVENT"
-     echo "github: $GITHUB"
+     echo "::error title=Validation Failed::The variable value is invalid."
+     exit 1
+
