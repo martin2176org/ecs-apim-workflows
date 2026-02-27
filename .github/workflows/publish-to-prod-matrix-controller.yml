@@ -23,7 +23,6 @@ jobs:
      env:
       GH_TOKEN: ${{ github.token }}
      name: Validate-Milestone-and-Generate-Matrix-Jobs
-     environment: ${{ inputs.API_MANAGEMENT_ENVIRONMENT }}
      runs-on: ubuntu-latest
      outputs:
        matrix: ${{ steps.generate-matrix.outputs.matrix }}
