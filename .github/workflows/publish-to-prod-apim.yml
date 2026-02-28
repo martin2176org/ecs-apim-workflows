@@ -26,6 +26,10 @@ on:
       BRANCH_FOR_PUBLISHER_CONFIG:
         required: true
         type: string
+      DRY_RUN:
+        required: true
+        type: string
+      
 # PUBLISH_ARTIFACTS_CHOICE has one allowed value when deploying to prod
 # "publish-delta-artifacts-in-specific-commit"
 concurrency:
@@ -139,9 +143,13 @@ jobs:
           API_MANAGEMENT_SERVICE_OUTPUT_FOLDER_PATH: ${{ GITHUB.WORKSPACE }}/${{ inputs.API_MANAGEMENT_SERVICE_OUTPUT_FOLDER_PATH }}
           CONFIGURATION_YAML_PATH: ${{ runner.temp }}/configuration-publisher.yml
         run: |
+          $DRY_RUN="${{ inputs.DRY_RUN }}"
+          if ($DRY_RUN -eq "yes")
+          {
+          Write-Output "The Publiher will run in dry-run mode"
           $env:DRY_RUN="true"
-          gci env:
-          ##############
+          Write-Output "Dry Run is $env:DRY_RUN"
+          }
           $publish_artifacts_choice="${{ inputs.PUBLISH_ARTIFACTS_CHOICE }}"
           if ($publish_artifacts_choice -eq "publish-delta-artifacts-in-latest-commit") 
           {
