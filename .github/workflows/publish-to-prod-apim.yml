@@ -32,6 +32,7 @@ on:
       
 # PUBLISH_ARTIFACTS_CHOICE has one allowed value when deploying to prod
 # "publish-delta-artifacts-in-specific-commit"
+# DRY_RUN is only supported apiops_release_version >= v7.0.0-alpha.2.0.0
 concurrency:
  group: publish-to-prod-apim-instance-matrixjob
  cancel-in-progress: false
