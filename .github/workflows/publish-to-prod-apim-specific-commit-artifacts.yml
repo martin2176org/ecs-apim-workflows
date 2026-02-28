@@ -28,9 +28,13 @@ on:
         type: string
       REFERENCE_NUMBER:
        required: true
-       type: string             
+       type: string
+      DRY_RUN:
+        required: true
+        type: string       
 # PUBLISH_ARTIFACTS_CHOICE has one allowed value when deploying all artifacts
 # "publish-delta-artifacts-in-specific-commit"
+# DRY_RUN is only supported apiops_release_version >= v7.0.0-alpha.2.0.0
 env:
   apiops_release_version: v7.0.0-beta.1.0.0
   Logging__LogLevel__Default: ${{ vars.LOG_LEVEL }}
@@ -138,6 +142,13 @@ jobs:
           API_MANAGEMENT_SERVICE_OUTPUT_FOLDER_PATH: ${{ GITHUB.WORKSPACE }}/${{ inputs.API_MANAGEMENT_SERVICE_OUTPUT_FOLDER_PATH }}
           CONFIGURATION_YAML_PATH: ${{ runner.temp }}/configuration-publisher.yml
         run: |
+          $DRY_RUN="${{ inputs.DRY_RUN }}"
+          if ($DRY_RUN -eq "yes")
+          {
+          Write-Output "The Publiher will run in dry-run mode"
+          $env:DRY_RUN="true"
+          Write-Output "Dry Run is $env:DRY_RUN"
+          }        
           $publish_artifacts_choice="${{ inputs.PUBLISH_ARTIFACTS_CHOICE }}"
           if ($publish_artifacts_choice -eq "publish-delta-artifacts-in-latest-commit") 
           {
