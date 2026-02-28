@@ -49,6 +49,9 @@ env:
   AZURE_TENANT_ID: "21c9315b-cdc8-41c8-b30d-d4da2c5a804b"
   # Logging__LogLevel__Default & DEBUG_STEPS should be repository variables
 jobs:
+    Check-Actor-Permission-To-Run-Workflow:
+     uses: martin2176/ecs-apim-workflows/.github/workflows/check-actor-permission.yml@main
+     
     Publish-Artifacts-to-Prod-APIM:
      name: Publish-Artifacts-to-Prod-APIM-From-Tag-${{ inputs.COMMIT_TAG }}
      runs-on: ubuntu-latest
