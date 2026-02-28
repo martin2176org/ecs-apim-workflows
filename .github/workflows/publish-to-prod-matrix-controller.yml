@@ -14,6 +14,9 @@ on:
       BRANCH_TO_DEPLOY_FROM:
         required: true
         type: string
+      DRY_RUN:
+        required: true
+        type: string        
 env:
   MILESTONE_PREFIX: ms
   PR_PREFIX: pr
@@ -118,3 +121,4 @@ jobs:
       API_MANAGEMENT_ENVIRONMENT: prod
       BRANCH_TO_DEPLOY_FROM: ${{ inputs.BRANCH_TO_DEPLOY_FROM }} 
       BRANCH_FOR_PUBLISHER_CONFIG: main
+      DRY_RUN: ${{ inputs.DRY_RUN }} 
