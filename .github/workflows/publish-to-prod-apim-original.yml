@@ -1,0 +1,235 @@
+#Reusable workflow to publish artifacts to Prod APIM instance
+name: Publish-Artifacts-to-Prod-APIM
+run-name: Publish-Artifacts-to-Prod-APIM
+#Author martin francis kallukalam
+on:
+  workflow_call:
+    inputs:
+      API_MANAGEMENT_ENVIRONMENT:
+        required: true
+        type: string
+      CONFIGURATION_YAML_PATH:
+        required: true
+        type: string
+      API_MANAGEMENT_SERVICE_OUTPUT_FOLDER_PATH:
+        required: true
+        type: string
+      PUBLISH_ARTIFACTS_CHOICE:
+        required: true
+        type: string
+      COMMIT_TAG:
+        required: true
+        type: string
+      BRANCH_TO_DEPLOY_FROM:
+        required: true
+        type: string
+      BRANCH_FOR_PUBLISHER_CONFIG:
+        required: true
+        type: string
+      DRY_RUN:
+        required: true
+        type: string
+      
+# PUBLISH_ARTIFACTS_CHOICE has one allowed value when deploying to prod
+# "publish-delta-artifacts-in-specific-commit"
+# DRY_RUN is only supported apiops_release_version >= v7.0.0-alpha.2.0.0
+concurrency:
+ group: publish-to-prod-apim-instance-matrixjob
+ cancel-in-progress: false
+
+env:
+  apiops_release_version: v7.0.0-beta.1.0.0
+  Logging__LogLevel__Default: ${{ vars.LOG_LEVEL }}
+  COMMIT_TAG: ${{ inputs.COMMIT_TAG }}
+  DEBUG_STEPS: ${{ vars.DEBUG_STEPS }}
+  AZURE_CLIENT_ID: "92f5cefc-a75b-4687-89c3-e9f7aaeff7c6"
+  API_MANAGEMENT_SERVICE_NAME: "feiaz-apim-prod"
+  AZURE_RESOURCE_GROUP_NAME: "apim"
+  AZURE_SUBSCRIPTION_ID: "db73da55-ad6a-4d59-aeea-bba62c278f2a"
+  AZURE_TENANT_ID: "21c9315b-cdc8-41c8-b30d-d4da2c5a804b"
+  # Logging__LogLevel__Default & DEBUG_STEPS should be repository variables
+jobs:
+    Check-Actor-Permission-To-Run-Workflow:
+     uses: martin2176/ecs-apim-workflows/.github/workflows/check-actor-permission.yml@main
+     
+    Publish-Artifacts-to-Prod-APIM:
+     name: Publish-Artifacts-to-Prod-APIM-From-Tag-${{ inputs.COMMIT_TAG }}
+     runs-on: ubuntu-latest
+     steps:
+      - name: Print-Input-From-Calling-Workflow
+        id: print-input-from-calling-workflow
+        run: |
+         echo "apimanagementenvironment is ${{ inputs.API_MANAGEMENT_ENVIRONMENT }}"
+         echo "configurationyamlpath is ${{ inputs.CONFIGURATION_YAML_PATH }}"
+         echo "apimanagementserviceoutputfolderpath is ${{ inputs.API_MANAGEMENT_SERVICE_OUTPUT_FOLDER_PATH }}"
+         echo "publishartifactschoice is ${{ inputs.PUBLISH_ARTIFACTS_CHOICE }}"
+         echo "commit_tag is: ${{ inputs.COMMIT_TAG }}"
+         echo "branch to deploy artifacts from is: ${{ inputs.BRANCH_TO_DEPLOY_FROM }}"
+         echo "branch for publisher config is: ${{ inputs.BRANCH_FOR_PUBLISHER_CONFIG }}"
+      - name: Login-to-Azure-with-Federated-Identity
+        id: login-to-azure-with-federated-identity
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+      - name: Get-Bearer-Token-for-APIOPS-Publisher
+        id: get-bearer-token-for-apiops-publisher
+        run: |
+          AZURE_BEARER_TOKEN_JSON=$(az account get-access-token --resource https://management.azure.com/ | jq -r '.')
+          AZURE_BEARER_TOKEN=$(echo "$AZURE_BEARER_TOKEN_JSON" | jq -r '.accessToken')
+          echo "AZURE_BEARER_TOKEN="$AZURE_BEARER_TOKEN"" >> $GITHUB_ENV
+          #Publisher apiops uses this env variable for authentication
+      - name: Checkout-Publisher-Config-Branch
+        id: checkout-publisher-config-branch
+        if: ${{ inputs.API_MANAGEMENT_ENVIRONMENT == 'prod' }}
+        uses: actions/checkout@v6
+        with:
+         ref: '${{ inputs.BRANCH_FOR_PUBLISHER_CONFIG }}'
+      - name: Copy-ConfigurationOverride-File
+        id: copy-configurationoverride-file
+        if: ${{ inputs.API_MANAGEMENT_ENVIRONMENT == 'prod' }}
+        run: |
+         echo "Copying override configuration file to runner.temp"
+         if [ -f "${{ inputs.CONFIGURATION_YAML_PATH }}" ]
+          then
+           echo "File exists.Cat-ing override configuration file"
+           cp ${{ inputs.CONFIGURATION_YAML_PATH }} ${RUNNER_TEMP}/configuration-publisher.yml
+           cat ${RUNNER_TEMP}/configuration-publisher.yml
+          else
+           echo "File does not exist.Copying an empty file"
+           cp /dev/null ${RUNNER_TEMP}/configuration-publisher.yml
+         fi
+         echo "Configuration override file location is:  ${{ runner.temp }}/configuration-publisher.yml"
+      - name: Checkout-Artifacts-Branch
+        id: checkout-artifacts-branch
+        uses: actions/checkout@v6
+        with:
+         ref: '${{ inputs.COMMIT_TAG }}' ## when using specific commit such as deploying a rel tag or a specific commitid
+         fetch-tags: 'true'
+         fetch-depth: 200
+      - name: List-Top-Level-Contents-Of-Artifacts-Folder
+        id: list-top-level-contents-of-artifacts-folder
+        if: ${{ env.DEBUG_STEPS == 'true' }}
+        run: |
+         echo "Listing the top level artifact directories"
+         ls -al ${{ GITHUB.WORKSPACE }}/${{ inputs.API_MANAGEMENT_SERVICE_OUTPUT_FOLDER_PATH }} || true 
+      - name: List-All-Artifacts-Files-Captured-In-the-Commit
+        id: list-all-artifact-files-changes-captured-in-the-commit
+        if: ${{ env.DEBUG_STEPS == 'true' && (inputs.PUBLISH_ARTIFACTS_CHOICE == 'publish-all-artifacts-in-repo-to-latest-commit' || inputs.PUBLISH_ARTIFACTS_CHOICE == 'publish-all-artifacts-in-repo-to-specific-commit') }}
+        run: |
+         echo "Listing all files in the repo"
+         git ls-tree -r --name-only ${COMMIT_TAG}
+      - name: List-Delta-Artifacts-Files-Captured-In-the-Commit
+        id: list-delta-artifact-files-changes-captured-in-the-commit
+        if: ${{ env.DEBUG_STEPS == 'true' && (inputs.PUBLISH_ARTIFACTS_CHOICE == 'publish-delta-artifacts-in-latest-commit' || inputs.PUBLISH_ARTIFACTS_CHOICE == 'publish-delta-artifacts-in-specific-commit') }}
+        run:  |
+         echo "Listing files changed in the commit"
+         git diff --compact-summary --name-status -B -M ${COMMIT_TAG}^ ${COMMIT_TAG}
+      - name: Convert-Tag-To-CommitID
+        id: convert-tag-to-commitid
+        run:  |
+         COMMITID="$(git rev-list -n 1 ${{ inputs.COMMIT_TAG }})"
+         echo "CommitID is $COMMITID"
+         echo "COMMITID=${COMMITID}" >> "$GITHUB_ENV"
+      - name: Print-PS-Environment-Variables
+        if: ${{ env.DEBUG_STEPS == 'true' }} 
+        id: printpsenvironmentvariables
+        shell: pwsh      
+        run: |
+          Write-Information "Printing out all environment variables in the shell for debugging purpose"
+          gci env:
+      - name: Run-Publisher
+        id: run-publisher
+        shell: pwsh
+        env:
+          # Other env variables are not added explicitly because they are assigned by workflow
+          API_MANAGEMENT_SERVICE_OUTPUT_FOLDER_PATH: ${{ GITHUB.WORKSPACE }}/${{ inputs.API_MANAGEMENT_SERVICE_OUTPUT_FOLDER_PATH }}
+          CONFIGURATION_YAML_PATH: ${{ runner.temp }}/configuration-publisher.yml
+        run: |
+          $DRY_RUN="${{ inputs.DRY_RUN }}"
+          if ($DRY_RUN -eq "yes")
+          {
+          Write-Output "The Publiher will run in dry-run mode"
+          $env:DRY_RUN="true"
+          Write-Output "Dry Run is $env:DRY_RUN"
+          }
+          $publish_artifacts_choice="${{ inputs.PUBLISH_ARTIFACTS_CHOICE }}"
+          if ($publish_artifacts_choice -eq "publish-delta-artifacts-in-latest-commit") 
+          {
+          Write-Output "User have chosen to publish Delta Artifacts in latest Commit (ie Delta between latest and previous commit)"
+          $env:COMMIT_ID="$env:COMMITID"
+          Write-Output "Commitid is $env:COMMITID"
+          }
+          
+          if ($publish_artifacts_choice -eq "publish-delta-artifacts-in-specific-commit") 
+          {
+          Write-Output "User have chosen to publish Delta Artifacts in Specific Commit (ie Delta between specific and previous commit)"
+          $env:COMMIT_ID="$env:COMMITID"
+          Write-Output "Commitid is $env:COMMITID"
+          }
+          if ($publish_artifacts_choice -eq "publish-all-artifacts-in-repo-to-latest-commit") 
+          {
+          Write-Output "User have chosen to publish All Artifacts in the branch uptil the latest commit"
+          Write-Output "Commitid is not set (NULL because ALL arificats is specified)"
+          }
+          if ($publish_artifacts_choice -eq "publish-all-artifacts-in-repo-to-specific-commit") 
+          {
+          Write-Output "User have chosen to publish All Artifacts in the branch uptill the specific commit"
+          Write-Output "Commitid is not set (NULL because ALL arificats is specified)"
+          }
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = "Stop"
+          $VerbosePreference = "Continue"
+          $InformationPreference = "Continue"
+
+          Write-Information "Setting name variables..."
+          $releaseFileName = "publisher-linux-x64.zip"
+          $executableFileName = "publisher"
+
+          if ("${{ runner.os }}" -like "*win*") {
+            $releaseFileName = "publisher-win-x64.zip"
+            $executableFileName = "publisher.exe"
+          }
+          elseif ("${{ runner.os }}" -like "*mac*" -and "${{ runner.arch }}" -like "*arm*") {
+            $releaseFileName = "publisher-osx-arm64.zip"
+          }
+          elseif ("${{ runner.os }}" -like "*mac*" -and "${{ runner.arch }}" -like "*x86_64*") {
+            $releaseFileName = "publisher-osx-x64.zip"
+          }
+          Write-Information "Downloading release..."
+          $uri = "https://github.com/Azure/apiops/releases/download/${{ env.apiops_release_version }}/$releaseFileName"
+          $downloadFilePath = Join-Path "${{ runner.temp }}" $releaseFileName
+          Invoke-WebRequest -Uri "$uri" -OutFile "$downloadFilePath"
+          
+          Write-Information "Extracting release..."
+          $executableFolderPath = Join-Path "${{ runner.temp }}" "publisher"
+          Expand-Archive -Path "$downloadFilePath" -DestinationPath "$executableFolderPath"
+          $executableFilePath = Join-Path "$executableFolderPath" $executableFileName
+
+          Write-Information "Setting file permissions..."
+          if ("${{ runner.os }}" -like "*linux*")
+          {
+            & chmod +x "$executableFilePath"
+            if ($LASTEXITCODE -ne 0) { throw "Setting file permissions failed."}
+          }
+          echo "---------------------PUBLISHER CONFIGURATION -------------------------"
+          cat $env:CONFIGURATION_YAML_PATH
+          echo "----------------------------------------------------------------------"
+          Write-Information "Running publisher..."
+          & "$executableFilePath"              
+          if ($LASTEXITCODE -ne 0) { throw "Running publisher failed."}
+
+          Write-Information "Execution complete."
+      - name: Add-Run-Publisher-Step-Success-Summary
+        id: add-run-publisher-step-success-summary
+        if: steps.run-publisher.outcome == 'success'
+        run: echo "✅ Deployment of ${{ inputs.COMMIT_TAG }} Succeeded" >> $GITHUB_STEP_SUMMARY
+        shell: bash
+      - name: Add-Run-Publisher-Step-Failure-Summary
+        id: add-run-publisher-step-failure-summary
+        if: steps.run-publisher.outcome == 'failure'
+        run: echo "❌ Deployment of ${{ inputs.COMMIT_TAG }} Failed" >> $GITHUB_STEP_SUMMARY
+        shell: bash  
+                            
+                   
