@@ -1,0 +1,127 @@
+#Reusable workflow to generate matrix jobs for deployment to Test APIM instance
+name: Publish-Artifacts-to-Prod-APIM-Instance-Matrix-Jobs-Controller
+run-name: Publish-Artifacts-to-Prod-APIM-Instance-Matrix-Jobs-Controller
+#Author martin francis kallukalam
+on:
+  workflow_call:
+    inputs:
+      MILESTONE_TITLE:
+        required: true
+        type: string
+      API_MANAGEMENT_ENVIRONMENT:
+        required: true
+        type: string
+      BRANCH_TO_DEPLOY_FROM:
+        required: true
+        type: string
+      DRY_RUN:
+        required: true
+        type: string        
+env:
+  MILESTONE_PREFIX: ms
+  PR_PREFIX: pr
+  COMMIT_PREFIX: cid
+jobs:
+    Check-Actor-Permission-To-Run-Workflow:
+     uses: martin2176/ecs-apim-workflows/.github/workflows/check-actor-permission.yml@main
+     
+    Validate-Milestone-and-Generate-Matrix-Jobs:
+     env:
+      GH_TOKEN: ${{ github.token }}
+     name: Validate-Milestone-and-Generate-Matrix-Jobs
+     runs-on: ubuntu-latest
+     outputs:
+       matrix: ${{ steps.generate-matrix.outputs.matrix }}
+     steps:
+      - name: Install-GH-Milestone-Extension
+        id: install-gh-milestone-extension
+        run: |
+         echo "Installing milestone gh extension."
+         gh extension install valeriobelli/gh-milestone
+      - name: Print-Input-From-Calling-Workflow
+        id: print-input-from-calling-workflow
+        run: |
+         echo "milestone is ${{ inputs.MILESTONE_TITLE }}"
+         echo "apimanagementenvironment is ${{ inputs.API_MANAGEMENT_ENVIRONMENT }}"
+         echo "branch to deploy artifacts from is ${{ inputs.BRANCH_TO_DEPLOY_FROM }}"
+      - name: Checkout-Artifacts-Branch
+        id: checkout-artifacts-branch
+        uses: actions/checkout@v6
+        with:
+         ref: '${{ inputs.BRANCH_TO_DEPLOY_FROM }}'
+         fetch-tags: 'true'
+         fetch-depth: 200
+      - name: Exit-If-Milestone-DoesNotExist
+        id: exit-if-milestone-doesnot-exist
+        continue-on-error: false
+        run: |
+          MILESTONE_COUNT=$(gh milestone list  --state all -q "${{ inputs.MILESTONE_TITLE }}" --json title |jq '.[] | select(.title == "${{ inputs.MILESTONE_TITLE }}")'  |jq -s '[.[]]'  | jq '. | length')
+          if [ "$MILESTONE_COUNT" -eq 1 ]; then
+           echo "Milestone ${{ inputs.MILESTONE_TITLE }} exist.Continuing."
+          else
+           echo "::error::Milestone ${{ inputs.MILESTONE_TITLE }} not found.Exiting." && exit 1
+          fi      
+      - name: Exit-If-OpenPRs-On-MileStone
+        id: exit-if-openprs-on-milestone
+        continue-on-error: false
+        run: |
+          OPEN_PR_COUNT=$(gh pr list --search 'milestone:"${{ inputs.MILESTONE_TITLE }}"' --state open --json number | jq '. | length')
+          if [ "$OPEN_PR_COUNT" -gt 0 ]; then
+           echo "::error::Cannot continue when there is $OPEN_PR_COUNT open PR(s) in the milestone ${{ inputs.MILESTONE_TITLE }}.Exiting." && exit 1
+          else
+           echo "No Open PRs found in the milestone ${{ inputs.MILESTONE_TITLE }}.Continuing."
+          fi
+      - name: Exit-If-OpenIssues-On-MileStone
+        id: exit-if-openissues-on-milestone
+        continue-on-error: false
+        run: |
+          OPEN_ISSUE_COUNT=$(gh issue list --search 'milestone:"${{ inputs.MILESTONE_TITLE }}"' --state open --json number | jq '. | length')
+          if [ "$OPEN_ISSUE_COUNT" -gt 0 ]; then
+           echo "::error::Cannot continue when there is $OPEN_ISSUE_COUNT open Issue(s) in the milestone ${{ inputs.MILESTONE_TITLE }}.Exiting." && exit 1
+          else
+           echo "No Open Issues found in the milestone ${{ inputs.MILESTONE_TITLE }}.Continuing."
+          fi      
+      - name: Generate-Matrix
+        id: generate-matrix
+        continue-on-error: false
+        run: |
+         #List tags with oldest first
+         TAG_LIST_ARRAY=$(git tag -l "${{ env.MILESTONE_PREFIX }}-${{ inputs.MILESTONE_TITLE }}-*" --sort=creatordate | jq -Rs 'split("\n") | .[] | select(length > 0)' | jq -s .)
+         echo "matrix="$TAG_LIST_ARRAY"" >> $GITHUB_OUTPUT
+         if echo "$TAG_LIST_ARRAY" | jq -e 'length == 0'; then
+          echo "Tag List is empty.Exiting"
+          echo "Tag List is empty.Exiting :thumbsdown:" > $GITHUB_STEP_SUMMARY
+          exit 1
+         else
+          echo "Tag List is not empty.Continuing"
+         fi
+      - name: Print-Matrix
+        env:
+          matrixenv: ${{ toJson(steps.generate-matrix.outputs.matrix) }}
+        id: print-matrix
+        run: |
+          echo "${{ toJson(steps.generate-matrix.outputs.matrix) }}"
+      - name: Add-Job-Summary
+        id: add-job-summary
+        if: ${{ always() }}
+        run: |
+         echo "### Environment: ${{ inputs.API_MANAGEMENT_ENVIRONMENT }} 💎" >> $GITHUB_STEP_SUMMARY
+         echo "##### Milestone 🚀: ${{ inputs.MILESTONE_TITLE }}" >> $GITHUB_STEP_SUMMARY
+        shell: bash          
+    
+    Publish-Artifacts-to-Prod-APIM-For-COMMIT-TAG:
+     needs: Validate-Milestone-and-Generate-Matrix-Jobs
+     strategy:
+      max-parallel: 1
+      matrix:
+       commit_tag: ${{ fromJson(needs.Validate-Milestone-and-Generate-Matrix-Jobs.outputs.matrix) }}
+     uses: martin2176/ecs-apim-workflows/.github/workflows/publish-to-prod-apim.yml@main
+     with:
+      COMMIT_TAG: ${{ matrix.commit_tag }}  #For Prod env commit tag is passed 
+      PUBLISH_ARTIFACTS_CHOICE: "publish-delta-artifacts-in-specific-commit"
+      API_MANAGEMENT_SERVICE_OUTPUT_FOLDER_PATH: apimartifacts
+      CONFIGURATION_YAML_PATH: configuration-publisher-prod.yml
+      API_MANAGEMENT_ENVIRONMENT: prod
+      BRANCH_TO_DEPLOY_FROM: ${{ inputs.BRANCH_TO_DEPLOY_FROM }} 
+      BRANCH_FOR_PUBLISHER_CONFIG: main
+      DRY_RUN: ${{ inputs.DRY_RUN }} 
