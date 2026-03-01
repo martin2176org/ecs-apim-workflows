@@ -2,7 +2,6 @@ name: Check-Actor-Permission-To-Run-Workflow
 run-name: Check-Actor-Permission-To-Run-Workflow
 on:
   workflow_call:
-  workflow_dispatch: 
 jobs:
  Check-Actor-Permission-To-Run-Workflow:
   name: Check-Actor-Permission-To-Run-Workflow
