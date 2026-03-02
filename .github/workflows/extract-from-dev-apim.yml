@@ -196,8 +196,12 @@ jobs:
         run: |
           cd $env:API_MANAGEMENT_SERVICE_OUTPUT_FOLDER_PATH
           echo "---------------------List of Extracted Files + Content ---------------"
-          pwd
-          ls -R
+          Get-ChildItem -Recurse -File | ForEach-Object {
+          Write-Host "--- File: $($_.FullName) ---"
+          Get-Content $_.FullName
+          Write-Host "`n"
+          }
+          echo "----------------------------------------------------------------------"
       - name: Add-Run-Extractor-Step-Success-Summary
         id: add-run-extractor-step-success-summary
         if: steps.run-extractor.outcome == 'success'
