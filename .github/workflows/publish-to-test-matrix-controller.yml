@@ -71,7 +71,8 @@ jobs:
         continue-on-error: false
         run: |
          #List tags with oldest first
-         TAG_LIST_ARRAY=$(git tag -l "${{ env.MILESTONE_PREFIX }}-${{ inputs.MILESTONE_TITLE }}-*" --sort=creatordate | jq -Rs 'split("\n") | .[] | select(length > 0)' | jq -s .)
+         #added quotes
+         TAG_LIST_ARRAY="$(git tag -l "${{ env.MILESTONE_PREFIX }}-${{ inputs.MILESTONE_TITLE }}-*" --sort=creatordate | jq -Rs 'split("\n") | .[] | select(length > 0)' | jq -s .)"
          echo "matrix="$TAG_LIST_ARRAY"" >> $GITHUB_OUTPUT
          if echo "$TAG_LIST_ARRAY" | jq -e 'length == 0'; then
           echo "Tag List is empty.Exiting"
