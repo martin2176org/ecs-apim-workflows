@@ -102,6 +102,13 @@ jobs:
         run: |
           Write-Information "Printing out all environment variables in the shell for debugging purpose"
           gci env:
+      - name: Add-Job-Summary
+        id: add-job-summary
+        if: ${{ always() }}
+        run: |
+         echo "### Environment: ${{ inputs.API_MANAGEMENT_ENVIRONMENT }} 🛠️" >> $GITHUB_STEP_SUMMARY
+         echo "##### Reference 🔢: ${{ inputs.REFERENCE_NUMBER }}" >> $GITHUB_STEP_SUMMARY
+        shell: bash             
       - name: Run-Extractor
         id: run-extractor
         shell: pwsh
@@ -176,7 +183,32 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Running extractor failed."}
 
           Write-Information "Execution complete."
+          sleep 2
+          echo "---------------------List of Extracted Files -------------------------"
           ls -R $env:API_MANAGEMENT_SERVICE_OUTPUT_FOLDER_PATH || true
+          echo "----------------------------------------------------------------------"
+      - name: Show-Extracted-File-Contents
+        if: ${{ env.DEBUG_STEPS == 'true' }} 
+        id: show-extracted-file-contents
+        shell: pwsh      
+        run: |
+              echo "---------------------List of Extracted Files + Content -------------------------"
+              Get-ChildItem -Recurse -File | ForEach-Object {
+              Write-Host "--- File: $($_.FullName) ---" -ForegroundColor Cyan
+              Get-Content $_.FullName
+              Write-Host "`n"
+              echo "---------------------List of Extracted Files + Content -------------------------"
+              }
+      - name: Add-Run-Extractor-Step-Success-Summary
+        id: add-run-extractor-step-success-summary
+        if: steps.run-extractor.outcome == 'success'
+        run: echo "✅ Extraction from Dev APIM Instance Succeeded" >> $GITHUB_STEP_SUMMARY
+        shell: bash
+      - name: Add-Run-Publisher-Step-Failure-Summary
+        id: add-run-publisher-step-failure-summary
+        if: steps.run-extractor.outcome == 'failure'
+        run: echo "❌ Extraction from Dev APIM Instance Failed" >> $GITHUB_STEP_SUMMARY
+        shell: bash              
       - name: Upload-Artifact
         id: upload-artifact
         uses: actions/upload-artifact@v6
@@ -253,7 +285,8 @@ jobs:
         id: get-pr-url
         run: |
          PR_URL=$(gh pr list --head '${{ inputs.HEAD_BRANCH_FOR_PR }}' --state open --json url --jq '.[].url')
-         echo "pr_url="$PR_URL"" >> "$GITHUB_OUTPUT"        
+         echo "pr_url="$PR_URL"" >> "$GITHUB_OUTPUT"
+         
   Notify-MS-Teams:
      name: Notify-MS-Teams
      needs: Create-Pull-Request
