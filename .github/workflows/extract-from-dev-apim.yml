@@ -188,6 +188,8 @@ jobs:
           ls -R $env:API_MANAGEMENT_SERVICE_OUTPUT_FOLDER_PATH || true
           echo "----------------------------------------------------------------------"
       - name: Show-Extracted-File-Contents
+        env:
+          API_MANAGEMENT_SERVICE_OUTPUT_FOLDER_PATH: ${{ runner.temp }}/apimartifacts      
         if: ${{ env.DEBUG_STEPS == 'true' }} 
         id: show-extracted-file-contents
         shell: pwsh      
