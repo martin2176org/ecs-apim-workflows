@@ -36,14 +36,12 @@ jobs:
         run: |
          RULESET_ID=$(gh api repos/${{ env.REPO }}/rulesets \
          --jq ".[] | select(.name == \"${{ env.RULESET_NAME }}\") | .id")
-         echo "------- $RULESET_ID"
          if [ -n "$RULESET_ID" ]; then
          gh api --method DELETE repos/${{ env.REPO }}/rulesets/$RULESET_ID
          else
-          echo "Ruleset not found.Continuing" 
+          echo "Ruleset not found.Nothing to delete.Continuing" 
          fi
       - name: Create-Branch-Protection-Ruleset
-        if: false
         id: create-branch-protection-rule-set
         shell: bash  
         run: |
@@ -84,5 +82,4 @@ jobs:
            }
            ]
            }' > data.json
-          cat data.json
           gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" /repos/$REPO/rulesets --input data.json
