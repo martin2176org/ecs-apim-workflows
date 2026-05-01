@@ -35,7 +35,7 @@ jobs:
         shell: bash  
         run: |
           echo '{
-           "name": ${{ env.RULESET_NAME }},
+           "name": "${{ env.RULESET_NAME }}",
            "target": "branch",
            "enforcement": "active",
            "conditions": {
