@@ -71,3 +71,4 @@ jobs:
            ]
            }' > data.json
           cat data.json
+          gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" /repos/martin2176/apim-secrets/rulesets --input data.json
