@@ -69,5 +69,5 @@ jobs:
            }
            }
            ]
-           } > data.json
+           }' > data.json
           cat data.json
