@@ -38,7 +38,7 @@ jobs:
          --jq ".[] | select(.name == \"${{ env.RULESET_NAME }}\") | .id")
          echo "------- $RULESET_ID"
          if [ -n "$RULESET_ID" ]; then
-         gh api --method DELETE repos/${{ github.repository }}/rulesets/$RULESET_ID
+         gh api --method DELETE repos/${{ env.REPO }}/rulesets/$RULESET_ID
          else
           echo "Ruleset not found.Continuing" 
          fi
