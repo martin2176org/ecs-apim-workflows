@@ -13,8 +13,9 @@ permissions:
   id-token: write
 env:
   TEMPLATE_REPO: "martin2176/apim-secrets"
-  REPO: ${{ inputs.REPO_NAME }}
+  REPO: "martin2176/${{ inputs.REPO_NAME }}"
   APIM_APPROVERS_TEAM_ID: 16495124
+  RULESET_NAME: "Require-Pull-Request"
   
 jobs:
   Create-and-Configure-AIM-Repo:
@@ -34,7 +35,7 @@ jobs:
         shell: bash  
         run: |
           echo '{
-           "name": "Require-Pull-Request",
+           "name": ${{ env.RULESET_NAME }},
            "target": "branch",
            "enforcement": "active",
            "conditions": {
@@ -71,4 +72,4 @@ jobs:
            ]
            }' > data.json
           cat data.json
-          gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" /repos/martin2176/apim-secrets/rulesets --input data.json
+          gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" /repos/$REPO/rulesets --input data.json
