@@ -34,12 +34,13 @@ jobs:
     env:
      GH_TOKEN: ${{ secrets.MARTIN_PAT_TOKEN }}
     steps:
-      - name: Create-Private-Repo-From-Template-Repo
+      - name: Create-Private-Repo-From-Template-Repo 
         id: create-private-repo-from-template-repo
         shell: bash  
         run: |
           gh repo view "$REPO" > /dev/null 2>&1 || gh repo create "$REPO" --template "$TEMPLATE_REPO" --private
-      - name: Delete-Ruleset-If-Exists
+          #To make the workflow idempotent. If repo exists just continue on
+      - name: Delete-Ruleset-If-Exists #To make the workflow idempotent. deleting and recreating it
         id: delete-ruleset-if-exists
         shell: bash
         run: |
@@ -92,7 +93,7 @@ jobs:
            ]
            }' > data.json
           gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" /repos/$REPO/rulesets --input data.json
-      - name: Delete-Environment-If-Exists
+      - name: Delete-Environment-If-Exists #To make the workflow idempotent. deleting and recreating it
         id: delete-environment-if-exists
         shell: bash
         run: |
