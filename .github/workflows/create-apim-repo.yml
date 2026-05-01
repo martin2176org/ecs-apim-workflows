@@ -24,4 +24,4 @@ jobs:
         id: create-private-repo-from-template-repo
         shell: bash  
         run: |
-          gh repo create ${{ inputs.REPO_NAME }} --template ${{ env.TEMPLATE_REPO }} --private
+          gh repo create ${{ inputs.REPO_NAME }} --template $TEMPLATE_REPO --private
