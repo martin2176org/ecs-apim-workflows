@@ -29,7 +29,7 @@ jobs:
         id: create-private-repo-from-template-repo
         shell: bash  
         run: |
-          gh repo create "$REPO" --template "$TEMPLATE_REPO" --private
+          gh repo view "$REPO" > /dev/null 2>&1 || gh repo create "$REPO" --template "$TEMPLATE_REPO" --private
       - name: Delete-Ruleset-If-Exists
         id: delete-ruleset-if-exists
         shell: bash
