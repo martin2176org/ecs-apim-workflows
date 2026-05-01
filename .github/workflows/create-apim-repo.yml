@@ -1,0 +1,24 @@
+name: Manual-Trigger-To-Create-APIM-Repo
+run-name: Manual-Trigger-To-Create-APIM-Repo
+#martin francis kallukalam
+on:
+  workflow_dispatch:
+    inputs:
+      REPO_NAME:
+        description: 'Enter name of APIM repo in the format lowercase apim-<apiname>'     
+        required: true
+        type: string
+env:
+  TEMPLATE_REPO: "martin2176/apim-secrets"
+jobs:
+  Extract-Artifacts-from-Dev-APIM:
+    name: Extract-Artifacts-from-Dev-APIM
+    runs-on: ubuntu-latest
+    env:
+     GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Create-Private-Repo-From-Template-Repo
+        id: create-private-repo-from-template-repo
+        shell: bash  
+        run: |
+          gh repo create ${{ inputs.REPO_NAME }} --template ${{ env.TEMPLATE_REPO }} --private
