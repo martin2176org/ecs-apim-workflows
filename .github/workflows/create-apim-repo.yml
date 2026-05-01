@@ -30,7 +30,20 @@ jobs:
         shell: bash  
         run: |
           gh repo create "$REPO" --template "$TEMPLATE_REPO" --private
+      - name: Delete-Ruleset-If-Exists
+        id: delete-ruleset-if-exists
+        shell: bash
+        run: |
+         RULESET_ID=$(gh api repos/${{ env.REPO }}/rulesets \
+         --jq ".[] | select(.name == \"${{ env.RULESET_NAME }}\") | .id")
+         echo "------- $RULESET_ID"
+         if [ -n "$RULESET_ID" ]; then
+         gh api --method DELETE repos/${{ github.repository }}/rulesets/$RULESET_ID
+         else
+          echo "Ruleset not found.Continuing" 
+         fi
       - name: Create-Branch-Protection-Ruleset
+        if: false
         id: create-branch-protection-rule-set
         shell: bash  
         run: |
