@@ -35,7 +35,7 @@ jobs:
           if [[ "${REPO_NAME_INPUT}" != apim-* ]]; 
            then
             echo "Error: The repo_name must start with the lowercase prefix apim-"
-            echo "####Repo Name does not start with lowercase apim-.Exiting ❌" >> $GITHUB_STEP_SUMMARY
+            echo "#### Repo Name does not start with lowercase apim-.Exiting ❌" >> $GITHUB_STEP_SUMMARY
             echo "::error title=Repo Name does not start with lowercase apim-.Exiting"
             exit 1
            else
