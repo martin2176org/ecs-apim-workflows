@@ -5,27 +5,21 @@ on:
   workflow_dispatch:
     inputs:
       REPO_NAME:
-        description: 'Enter name of APIM repo in the format lowercase apim-<apiname>'     
+        description: |
+         Enter name of APIM repo in the format all lowercase apim-<apiname>
+         Example: apim-product-pricing-aks
         required: true
         type: string
-      DEPLOYMENT_ENV:
-        description: |
-         Enter name of Deployment environment to create.
-         Currently only Prod environment is needed for SDLC 
-        required: true
-        type: choice
-        default: "prod"
-        options:
-        - "prod"      
         
 permissions:
   contents: write
 env:
+  REPO_ORG: "martin2176"
   TEMPLATE_REPO: "martin2176/apim-secrets"
-  REPO: "martin2176/${{ inputs.REPO_NAME }}"
   APIM_APPROVERS_TEAM_ID: 16495124
   RULESET_NAME: "Require-Pull-Request"
-  DEPLOYMENT_ENV: ${{ inputs.DEPLOYMENT_ENV }}
+  DEPLOYMENT_ENV: "prod"
+  REPO_NAME_INPUT: ${{ inputs.REPO_NAME }}
   
 jobs:
   Create-and-Configure-AIM-Repo:
@@ -34,20 +28,36 @@ jobs:
     env:
      GH_TOKEN: ${{ secrets.MARTIN_PAT_TOKEN }}
     steps:
+      - name: Check-for-Repo-Naming-Standard 
+        id: check-for-repo-naming-standard
+        shell: bash  
+        run: |
+          if [[ "${REPO_NAME_INPUT}" != apim-* ]]; 
+           then
+            echo "Error: The repo_name must start with the lowercase prefix 'apim-'"
+            echo ""####Repo Name doesn't start with lowercase "apim-".Exiting ❌ " >> $GITHUB_STEP_SUMMARY
+            echo "::error title=Repo Name doesn't start with lowercase apim-.Exiting"
+            exit 1
+           else
+           echo "REPO_NAME_LOWERCASE="${REPO_ORG,,}/${REPO_NAME_INPUT,,}" >> $GITHUB_ENV #convert the full repo name to all lowercase
+          fi
+          echo $REPO_NAME_LOWERCASE
+          
       - name: Create-Private-Repo-From-Template-Repo 
         id: create-private-repo-from-template-repo
         shell: bash  
         run: |
-          gh repo view "$REPO" > /dev/null 2>&1 || gh repo create "$REPO" --template "$TEMPLATE_REPO" --private
+          echo $REPO_NAME_LOWERCASE
+          gh repo view "$REPO_NAME_LOWERCASE" > /dev/null 2>&1 || gh repo create "$REPO_NAME_LOWERCASE" --template "$TEMPLATE_REPO" --private
           #To make the workflow idempotent. If repo exists just continue on
       - name: Delete-Ruleset-If-Exists #To make the workflow idempotent. deleting and recreating it
         id: delete-ruleset-if-exists
         shell: bash
         run: |
-         RULESET_ID=$(gh api repos/${{ env.REPO }}/rulesets \
+         RULESET_ID=$(gh api repos/$REPO_NAME_LOWERCASE/rulesets \
          --jq ".[] | select(.name == \"${{ env.RULESET_NAME }}\") | .id")
          if [ -n "$RULESET_ID" ]; then
-         gh api --method DELETE repos/${{ env.REPO }}/rulesets/$RULESET_ID
+         gh api --method DELETE repos/$REPO_NAME_LOWERCASE/rulesets/$RULESET_ID
          else
           echo "Ruleset not found.Nothing to delete.Continuing" 
          fi
@@ -92,13 +102,13 @@ jobs:
            }
            ]
            }' > data.json
-          gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" /repos/$REPO/rulesets --input data.json
+          gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" /repos/$REPO_NAME_LOWERCASE/rulesets --input data.json
       - name: Delete-Environment-If-Exists #To make the workflow idempotent. deleting and recreating it
         id: delete-environment-if-exists
         shell: bash
         run: |
          gh api --method DELETE -H "Accept: application/vnd.github+json" \
-         -H "X-GitHub-Api-Version: 2022-11-28" /repos/martin2176/apim-secrets/environments/dev > /dev/null 2>&1 || true
+         -H "X-GitHub-Api-Version: 2022-11-28" /repos/$REPO_NAME_LOWERCASE/environments/$DEPLOYMENT_ENV > /dev/null 2>&1 || true
       - name: Create-Environment-and-Deployment-Protection-Rule
         id: create-environment-and-deployment-protection-rule
         shell: bash  
@@ -112,4 +122,4 @@ jobs:
            }],
           "can_admins_bypass": false
           }' > data.json
-          gh api --method PUT -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" /repos/$REPO/environments/$DEPLOYMENT_ENV --input data.json      
+          gh api --method PUT -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" /repos/$REPO_NAME_LOWERCASE/environments/$DEPLOYMENT_ENV --input data.json      
