@@ -39,7 +39,7 @@ jobs:
             echo "::error title=Repo Name does not start with lowercase apim-.Exiting"
             exit 1
            else
-           echo "REPO_NAME_LOWERCASE="${REPO_ORG,,}/${REPO_NAME_INPUT,,}" >> $GITHUB_ENV #convert the full repo name to all lowercase
+           echo 'REPO_NAME_LOWERCASE="${REPO_ORG,,}/${REPO_NAME_INPUT,,}' >> $GITHUB_ENV #convert the full repo name to all lowercase
           fi
           echo $REPO_NAME_LOWERCASE
           
