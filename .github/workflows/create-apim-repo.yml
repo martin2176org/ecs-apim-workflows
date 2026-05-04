@@ -14,7 +14,7 @@ on:
 permissions:
   contents: write
 env:
-  REPO_ORG: "martin2176"
+  REPO_ORG: "martin2176org"
   TEMPLATE_REPO: "apim-secrets"
   APIM_APPROVERS_TEAM_ID: 17366620
   RULESET_NAME: "Require-Pull-Request"
