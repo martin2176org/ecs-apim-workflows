@@ -17,6 +17,12 @@ env:
   REPO_ORG: "martin2176org"
   TEMPLATE_REPO: "apim-secrets"
   APIM_APPROVERS_TEAM_ID: 17366620
+  #APIM_APPROVERS_TEAM_ID fergmain is 16495124
+  APIM_CODEOWNERS_TEAM_ID: 16495125
+  APIM_DEVELOPERS_TEAM_ID: 16495129
+  APIM_ISSUEMGMT_TEAM_ID: 16495121
+  APIM_REPOADMINS_TEAM_ID: 16495135
+  #gh api /orgs/<org>/teams/<teamslug> --jq '.id'
   RULESET_NAME: "Require-Pull-Request"
   DEPLOYMENT_ENV: "prod"
   REPO_NAME_INPUT: ${{ inputs.REPO_NAME }}
@@ -42,7 +48,6 @@ jobs:
            echo "REPO_NAME_LOWERCASE=${REPO_ORG,,}/${REPO_NAME_INPUT,,}" >> $GITHUB_ENV #convert the full repo name to all lowercase
           fi
           echo "REPO_NAME_LOWERCASE=${REPO_ORG,,}/${REPO_NAME_INPUT,,}"
-          
       - name: Create-Private-Repo-From-Template-Repo 
         id: create-private-repo-from-template-repo
         shell: bash  
@@ -50,6 +55,12 @@ jobs:
           echo Repository to be created is: "$REPO_NAME_LOWERCASE"
           gh repo view "$REPO_NAME_LOWERCASE" > /dev/null 2>&1 || gh repo create "$REPO_NAME_LOWERCASE" --template "$REPO_ORG"/"$TEMPLATE_REPO" --public
           #To make the workflow idempotent. If repo exists just continue on
+      - name: Assign-Roles-To-Teams-on-Repo 
+        id: assign-roles-to-teams-on-repo
+        shell: bash  
+        run: |
+          gh api --method PUT -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" \
+          /orgs/$REPO_ORG/teams/apim-developers/repos/$REPO_NAME_LOWERCASE -f permission='push'
       - name: Delete-Ruleset-If-Exists #To make the workflow idempotent. deleting and recreating it
         id: delete-ruleset-if-exists
         shell: bash
