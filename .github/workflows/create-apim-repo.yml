@@ -95,7 +95,7 @@ jobs:
             "minimum_approvals": 1,
             "file_patterns": ["**"],
             "reviewer": {
-              "id": "${{ env.APIM_APPROVERS_TEAM_ID }}",
+              "id": ${{ env.APIM_APPROVERS_TEAM_ID }},
               "type": "Team"
              }
              }
@@ -128,7 +128,7 @@ jobs:
           "reviewers": [
           {
           "type": "Team",
-          "id": "${{ env.APIM_APPROVERS_TEAM_ID }}"
+          "id": ${{ env.APIM_APPROVERS_TEAM_ID }}
            }],
           "can_admins_bypass": false
           }' > data.json
