@@ -10,7 +10,7 @@ on:
          Example: apim-product-pricing-aks
         required: true
         type: string
-      ARTIFACT_SECTION_TO_UPDATE:
+      ARTIFACT_SECTION_TO_UPDATE:   ##################
         description: |
          Extractor & Publisher Config File section to update:- apis: ["<apiname>"]
          Currently only apis section is supported by this workflow
@@ -54,9 +54,10 @@ jobs:
             exit 1
            else
            echo "REPO_NAME_LOWERCASE=${REPO_ORG,,}/${REPO_NAME_INPUT,,}" >> $GITHUB_ENV #convert the full repo name to all lowercase
+           echo "REPO_NAME_INPUT_LOWERCASE=${REPO_NAME_INPUT,,}" >> $GITHUB_ENV ##############################################
           fi
-          echo "REPO_NAME_LOWERCASE=${REPO_ORG,,}/${REPO_NAME_INPUT,,}"
-      - name: Create-Private-Repo-From-Template-Repo 
+          echo "REPO_NAME_LOWERCASE=${REPO_ORG,,}/${REPO_NAME_INPUT,,}"  
+      - name: Create-Private-Repo-From-Template-Repo  
         id: create-private-repo-from-template-repo
         shell: bash  
         run: |
@@ -151,16 +152,27 @@ jobs:
           "can_admins_bypass": false
           }' > data.json
           gh api --method PUT -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" /repos/$REPO_NAME_LOWERCASE/environments/$DEPLOYMENT_ENV --input data.json
-      - name: Update-Extractor-and-Publisher-ConfigFiles
-        id: update-extractor-and-publisher-config-files
-        shell: bash  
-        run: |
-         echo ${{ env.REPO_NAME_LOWERCASE }}  
-      - name: Checkout-APIM-Artifact-Repo
+      - name: Checkout-APIM-Artifact-Repo ####################################
         id: checkout-apim-artifact-repo
         uses: actions/checkout@v6
         with:
          ref: main
          token: ${{ secrets.MARTIN_PAT_TOKEN }}
          repository: '${{ env.REPO_NAME_LOWERCASE }}'
-
+      - name: Update-Extractor-and-Publisher-ConfigFiles ####################################
+        id: update-extractor-and-publisher-config-files
+        shell: bash  
+        run: |
+         cd $GITHUB_WORKSPACE
+         ls -al
+         yq -i '.apis[0] = strenv(REPO_NAME_INPUT_LOWERCASE)' configuration-extractor-dev.yml
+         yq -i '(.apis[] | select(.name == "name-of-api")).name = strenv(REPO_NAME_INPUT_LOWERCASE)' configuration-publisher-dev.yml
+         yq -i '(.apis[] | select(.name == "name-of-api")).name = strenv(REPO_NAME_INPUT_LOWERCASE)' configuration-publisher-test.yml
+         yq -i '(.apis[] | select(.name == "name-of-api")).name = strenv(REPO_NAME_INPUT_LOWERCASE)' configuration-publisher-prod.yml
+         cat configuration-extractor-dev.yml
+         cat configuration-publisher-dev.yml
+         cat configuration-publisher-test.yml
+         cat configuration-publisher-prod.yml
+         
+         
+        
