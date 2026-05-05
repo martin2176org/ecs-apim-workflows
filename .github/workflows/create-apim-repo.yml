@@ -81,6 +81,57 @@ jobs:
          else
           echo "Ruleset not found.Nothing to delete.Continuing" 
          fi
+      - name: Delete-Environment-If-Exists #To make the workflow idempotent. deleting and recreating it
+        id: delete-environment-if-exists
+        shell: bash
+        run: |
+         gh api --method DELETE -H "Accept: application/vnd.github+json" \
+         -H "X-GitHub-Api-Version: 2022-11-28" /repos/$REPO_NAME_LOWERCASE/environments/$DEPLOYMENT_ENV > /dev/null 2>&1 || true
+      - name: Create-Environment-and-Deployment-Protection-Rule
+        id: create-environment-and-deployment-protection-rule
+        shell: bash  
+        run: |
+          echo '{
+          "prevent_self_review": true,
+          "reviewers": [
+          {
+          "type": "Team",
+          "id": ${{ env.APIM_APPROVERS_TEAM_ID }}
+           }],
+          "can_admins_bypass": false
+          }' > data.json
+          gh api --method PUT -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" /repos/$REPO_NAME_LOWERCASE/environments/$DEPLOYMENT_ENV --input data.json
+      - name: Checkout-APIM-Artifact-Repo ####################################
+        id: checkout-apim-artifact-repo
+        uses: actions/checkout@v6
+        with:
+         ref: main
+         token: ${{ secrets.MARTIN_PAT_TOKEN }}
+         repository: '${{ env.REPO_NAME_LOWERCASE }}'
+      - name: Update-Extractor-and-Publisher-ConfigFiles ####################################
+        id: update-extractor-and-publisher-config-files
+        shell: bash  
+        run: |
+         cd $GITHUB_WORKSPACE
+         ls -al
+         yq -i '.apis[0] = strenv(REPO_NAME_INPUT_LOWERCASE)' configuration-extractor-dev.yml
+         yq -i '(.apis[] | select(.name == "name-of-api")).name = strenv(REPO_NAME_INPUT_LOWERCASE)' configuration-publisher-dev.yml
+         yq -i '(.apis[] | select(.name == "name-of-api")).name = strenv(REPO_NAME_INPUT_LOWERCASE)' configuration-publisher-test.yml
+         yq -i '(.apis[] | select(.name == "name-of-api")).name = strenv(REPO_NAME_INPUT_LOWERCASE)' configuration-publisher-prod.yml
+         cat configuration-extractor-dev.yml
+         cat configuration-publisher-dev.yml
+         cat configuration-publisher-test.yml
+         cat configuration-publisher-prod.yml
+      - name: Commit-and-Push ####################################
+        id: commit-and-push
+        shell: bash  
+        run: |
+         git config --global user.name
+         git config user.name "sap1048"
+         git config user.email "sap1048@ferguson.com"
+         git add .
+         # Only commit if there are actual file changes (adding this as a just in case)
+         git diff --quiet && git diff --staged --quiet || (git commit -m "Updated extractor and publisher configs" && git push)
       - name: Create-Branch-Protection-Ruleset
         id: create-branch-protection-rule-set
         shell: bash  
@@ -131,56 +182,5 @@ jobs:
            }
            ]
            }' > data.json
-          gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" /repos/$REPO_NAME_LOWERCASE/rulesets --input data.json
-      - name: Delete-Environment-If-Exists #To make the workflow idempotent. deleting and recreating it
-        id: delete-environment-if-exists
-        shell: bash
-        run: |
-         gh api --method DELETE -H "Accept: application/vnd.github+json" \
-         -H "X-GitHub-Api-Version: 2022-11-28" /repos/$REPO_NAME_LOWERCASE/environments/$DEPLOYMENT_ENV > /dev/null 2>&1 || true
-      - name: Create-Environment-and-Deployment-Protection-Rule
-        id: create-environment-and-deployment-protection-rule
-        shell: bash  
-        run: |
-          echo '{
-          "prevent_self_review": true,
-          "reviewers": [
-          {
-          "type": "Team",
-          "id": ${{ env.APIM_APPROVERS_TEAM_ID }}
-           }],
-          "can_admins_bypass": false
-          }' > data.json
-          gh api --method PUT -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" /repos/$REPO_NAME_LOWERCASE/environments/$DEPLOYMENT_ENV --input data.json
-      - name: Checkout-APIM-Artifact-Repo ####################################
-        id: checkout-apim-artifact-repo
-        uses: actions/checkout@v6
-        with:
-         ref: main
-         token: ${{ secrets.MARTIN_PAT_TOKEN }}
-         repository: '${{ env.REPO_NAME_LOWERCASE }}'
-      - name: Update-Extractor-and-Publisher-ConfigFiles ####################################
-        id: update-extractor-and-publisher-config-files
-        shell: bash  
-        run: |
-         cd $GITHUB_WORKSPACE
-         ls -al
-         yq -i '.apis[0] = strenv(REPO_NAME_INPUT_LOWERCASE)' configuration-extractor-dev.yml
-         yq -i '(.apis[] | select(.name == "name-of-api")).name = strenv(REPO_NAME_INPUT_LOWERCASE)' configuration-publisher-dev.yml
-         yq -i '(.apis[] | select(.name == "name-of-api")).name = strenv(REPO_NAME_INPUT_LOWERCASE)' configuration-publisher-test.yml
-         yq -i '(.apis[] | select(.name == "name-of-api")).name = strenv(REPO_NAME_INPUT_LOWERCASE)' configuration-publisher-prod.yml
-         cat configuration-extractor-dev.yml
-         cat configuration-publisher-dev.yml
-         cat configuration-publisher-test.yml
-         cat configuration-publisher-prod.yml
-      - name: Commit-and-Push ####################################
-        id: commit-and-push
-        shell: bash  
-        run: |
-         git config user.name "sap1048"
-         git config user.email "sap1048@ferguson.com"
-         git add .
-         # Only commit if there are actual file changes (adding this as a just in case)
-         git diff --quiet && git diff --staged --quiet || (git commit -m "Updated extractor and publisher configs" && git push)
-         
+          gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" /repos/$REPO_NAME_LOWERCASE/rulesets --input data.json        
         
