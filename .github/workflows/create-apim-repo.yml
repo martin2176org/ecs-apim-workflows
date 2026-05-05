@@ -12,15 +12,15 @@ on:
         type: string
       ARTIFACT_SECTION_TO_UPDATE:   ##################
         description: |
-         Extractor & Publisher Config File section to update:- apis: ["<apiname>"]
+         Extractor & Publisher Config File section to update:- apis
          Currently only apis section is supported by this workflow
-         required: true
+        required: true
         type: choice
         options:
         - apis 
       
 permissions:
-  contents: write
+  contents: read
 env:
   REPO_ORG: "martin2176org"
   TEMPLATE_REPO: "apim-repo-template"
@@ -30,7 +30,6 @@ env:
   APIM_DEVELOPERS_TEAM_ID: 16495129
   APIM_ISSUEMGMT_TEAM_ID: 16495121
   APIM_REPOADMINS_TEAM_ID: 16495135
-  #gh api /orgs/<org>/teams/<teamslug> --jq '.id'
   RULESET_NAME: "Require-Pull-Request"
   DEPLOYMENT_ENV: "prod"
   REPO_NAME_INPUT: ${{ inputs.REPO_NAME }}
@@ -118,10 +117,6 @@ jobs:
          yq -i '(.apis[] | select(.name == "name-of-api")).name = strenv(REPO_NAME_INPUT_LOWERCASE)' configuration-publisher-dev.yml
          yq -i '(.apis[] | select(.name == "name-of-api")).name = strenv(REPO_NAME_INPUT_LOWERCASE)' configuration-publisher-test.yml
          yq -i '(.apis[] | select(.name == "name-of-api")).name = strenv(REPO_NAME_INPUT_LOWERCASE)' configuration-publisher-prod.yml
-         cat configuration-extractor-dev.yml
-         cat configuration-publisher-dev.yml
-         cat configuration-publisher-test.yml
-         cat configuration-publisher-prod.yml
       - name: Commit-and-Push ####################################
         id: commit-and-push
         shell: bash  
