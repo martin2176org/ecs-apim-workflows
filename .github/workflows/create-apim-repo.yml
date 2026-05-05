@@ -173,6 +173,12 @@ jobs:
          cat configuration-publisher-dev.yml
          cat configuration-publisher-test.yml
          cat configuration-publisher-prod.yml
-         
+      - name: Commit-and-Push ####################################
+        id: commit-and-push
+        shell: bash  
+        run: |
+         git add .
+         # Only commit if there are actual file changes (adding this as a just in case)
+         git diff --quiet && git diff --staged --quiet || (git commit -m "Updated extractor and publisher configs" && git push)
          
         
