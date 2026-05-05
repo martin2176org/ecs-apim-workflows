@@ -158,8 +158,12 @@ jobs:
          echo ${{ env.REPO_NAME_LOWERCASE }}  
       - name: Checkout-APIM-Artifact-Repo
         id: checkout-apim-artifact-repo
+        env:
+         GIT_CURL_VERBOSE: "true" # Trace HTTP/HTTPS connections
+         GIT_TRACE: "true" 
         uses: actions/checkout@v6
         with:
-         ref: apim-test1
+         ref: main
          token: ${{ secrets.MARTIN_PAT_TOKEN }}
+         repository: '${{ env.REPO_NAME_LOWERCASE }}'
 
