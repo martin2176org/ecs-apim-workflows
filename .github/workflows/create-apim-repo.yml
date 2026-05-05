@@ -61,7 +61,7 @@ jobs:
         shell: bash  
         run: |
           echo Repository to be created is: "$REPO_NAME_LOWERCASE"
-          #gh repo view "$REPO_NAME_LOWERCASE" > /dev/null 2>&1 || gh repo create "$REPO_NAME_LOWERCASE" --template "$REPO_ORG"/"$TEMPLATE_REPO" --public
+          gh repo view "$REPO_NAME_LOWERCASE" > /dev/null 2>&1 || gh repo create "$REPO_NAME_LOWERCASE" --template "$REPO_ORG"/"$TEMPLATE_REPO" --public
           #To make the workflow idempotent. If repo exists just continue on
       - name: Assign-Roles-To-Teams-on-Repo 
         id: assign-roles-to-teams-on-repo
@@ -158,9 +158,6 @@ jobs:
          echo ${{ env.REPO_NAME_LOWERCASE }}  
       - name: Checkout-APIM-Artifact-Repo
         id: checkout-apim-artifact-repo
-        env:
-         GIT_CURL_VERBOSE: "true" # Trace HTTP/HTTPS connections
-         GIT_TRACE: "true" 
         uses: actions/checkout@v6
         with:
          ref: main
