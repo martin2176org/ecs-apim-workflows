@@ -151,14 +151,15 @@ jobs:
           "can_admins_bypass": false
           }' > data.json
           gh api --method PUT -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2026-03-10" /repos/$REPO_NAME_LOWERCASE/environments/$DEPLOYMENT_ENV --input data.json
-      - name: Checkout-APIM-Artifact-Repo
-        id: checkout-apim-artifact-repo
-        uses: actions/checkout@v6
-        with:
-         ref: martin2176org/apim-test1
-         token: ${{ secrets.MARTIN_PAT_TOKEN }}
       - name: Update-Extractor-and-Publisher-ConfigFiles
         id: update-extractor-and-publisher-config-files
         shell: bash  
         run: |
-         echo ${{ env.REPO_NAME_LOWERCASE }}
+         echo ${{ env.REPO_NAME_LOWERCASE }}  
+      - name: Checkout-APIM-Artifact-Repo
+        id: checkout-apim-artifact-repo
+        uses: actions/checkout@v6
+        with:
+         ref: apim-test1
+         token: ${{ secrets.MARTIN_PAT_TOKEN }}
+
