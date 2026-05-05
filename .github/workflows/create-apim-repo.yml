@@ -177,6 +177,8 @@ jobs:
         id: commit-and-push
         shell: bash  
         run: |
+         git config user.name "sap1048"
+         git config user.email "sap1048@ferguson.com"
          git add .
          # Only commit if there are actual file changes (adding this as a just in case)
          git diff --quiet && git diff --staged --quiet || (git commit -m "Updated extractor and publisher configs" && git push)
