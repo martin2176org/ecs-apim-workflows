@@ -23,7 +23,7 @@ permissions:
   contents: write
 env:
   REPO_ORG: "martin2176org"
-  TEMPLATE_REPO: "apim-secrets"
+  TEMPLATE_REPO: "apim-repo-template"
   APIM_APPROVERS_TEAM_ID: 17366620
   #APIM_APPROVERS_TEAM_ID fergmain is 16495124
   APIM_CODEOWNERS_TEAM_ID: 16495125
