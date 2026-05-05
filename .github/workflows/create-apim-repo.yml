@@ -155,7 +155,8 @@ jobs:
         id: checkout-apim-artifact-repo
         uses: actions/checkout@v6
         with:
-         ref: ${{ env.REPO_NAME_LOWERCASE }}
+         ref: martin2176org/apim-test1
+         token: ${{ secrets.MARTIN_PAT_TOKEN }}
       - name: Update-Extractor-and-Publisher-ConfigFiles
         id: update-extractor-and-publisher-config-files
         shell: bash  
