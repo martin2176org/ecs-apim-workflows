@@ -126,7 +126,6 @@ jobs:
         id: commit-and-push
         shell: bash  
         run: |
-         git config --global user.name
          git config user.name "sap1048"
          git config user.email "sap1048@ferguson.com"
          git add .
